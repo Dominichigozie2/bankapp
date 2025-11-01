@@ -43,10 +43,10 @@
                             </div>
 
                             <!-- Passcode -->
-                            <div class="col-span-12">
+                            <!-- <div class="col-span-12">
                                 <label class="form-label">Passcode</label>
                                 <input type="text" name="passcode" class="form-input w-full" placeholder="Enter your 6-digit passcode">
-                            </div>
+                            </div> -->
 
                             <!-- Submit -->
                             <div class="col-span-12">
@@ -60,19 +60,57 @@
     </div>
 </div>
 
+<!-- Create Passcode Modal -->
+<div id="createPasscodeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+    <div class="bg-white p-6 rounded-lg w-96">
+        <h3 class="text-lg font-bold mb-4">Create Passcode</h3>
+        <input type="text" id="newPasscode" class="form-input w-full mb-4" maxlength="6" placeholder="Enter 6-digit passcode">
+        <button id="savePasscodeBtn" class="btn btn-primary w-full">Save Passcode</button>
+    </div>
+</div>
+
+<!-- Verify Passcode Modal -->
+<div id="verifyPasscodeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+    <div class="bg-white p-6 rounded-lg w-96">
+        <h3 class="text-lg font-bold mb-4">Enter Passcode</h3>
+        <input type="text" id="userPasscode" class="form-input w-full mb-4" maxlength="6" placeholder="Enter your passcode">
+        <button id="verifyPasscodeBtn" class="btn btn-primary w-full">Verify & Login</button>
+    </div>
+</div>
 
 @endsection
 
 @section('scripts')
 <script>
-    $('#loginForm').on('submit', function(e) {
-        e.preventDefault();
+   $('#loginForm').on('submit', function(e) {
+    e.preventDefault();
 
-        $.ajax({
-            url: "{{ route('login.post') }}",
-            method: "POST",
-            data: $(this).serialize(),
-            success: function(res) {
+    $.ajax({
+        url: "{{ route('login.post') }}",
+        method: "POST",
+        data: $(this).serialize(),
+        success: function(res) {
+            if (res.first_time) {
+                iziToast.info({
+                    title: 'Setup Required',
+                    message: res.message,
+                    position: 'topRight'
+                });
+                $('#createPasscodeModal').removeClass('hidden');
+                return;
+            }
+
+            if (res.require_passcode) {
+                iziToast.info({
+                    title: 'Verification Needed',
+                    message: res.message,
+                    position: 'topRight'
+                });
+                $('#verifyPasscodeModal').removeClass('hidden');
+                return;
+            }
+
+            if (res.success && res.redirect) {
                 iziToast.success({
                     title: 'Success',
                     message: res.message,
@@ -80,17 +118,86 @@
                 });
                 setTimeout(() => {
                     window.location.href = res.redirect;
-                }, 1500);
-            },
-            error: function(xhr) {
-                let res = xhr.responseJSON;
-                iziToast.error({
-                    title: 'Error',
-                    message: res.message || 'Login failed.',
-                    position: 'topRight'
-                });
+                }, 1200);
             }
-        });
+        },
+        error: function(xhr) {
+            iziToast.error({
+                title: 'Error',
+                message: xhr.responseJSON?.message || 'Login failed.',
+                position: 'topRight'
+            });
+        }
     });
+});
+
+// Save new passcode
+$('#savePasscodeBtn').on('click', function() {
+    const passcode = $('#newPasscode').val();
+    const email = $('input[name="email"]').val();
+
+    $.ajax({
+        url: "{{ route('user.save.passcode') }}",
+        method: "POST",
+        data: {
+            _token: "{{ csrf_token() }}",
+            email: email,
+            passcode: passcode
+        },
+        success: function(res) {
+            iziToast.success({
+                title: 'Success',
+                message: res.message,
+                position: 'topRight'
+            });
+            $('#createPasscodeModal').addClass('hidden');
+        },
+        error: function(xhr) {
+            iziToast.error({
+                title: 'Error',
+                message: xhr.responseJSON?.message || 'Failed to save passcode.',
+                position: 'topRight'
+            });
+        }
+    });
+});
+
+// Verify passcode and login
+$('#verifyPasscodeBtn').on('click', function() {
+    const passcode = $('#userPasscode').val();
+    const email = $('input[name="email"]').val();
+
+    $.ajax({
+        url: "{{ route('user.verify.passcode') }}",
+        method: "POST",
+        data: {
+            _token: "{{ csrf_token() }}",
+            email: email,
+            passcode: passcode
+        },
+        success: function(res) {
+            iziToast.success({
+                title: 'Success',
+                message: res.message,
+                position: 'topRight'
+            });
+            $('#verifyPasscodeModal').addClass('hidden');
+            if (res.redirect) {
+                setTimeout(() => {
+                    window.location.href = res.redirect;
+                }, 1200);
+            }
+        },
+        error: function(xhr) {
+            iziToast.error({
+                title: 'Error',
+                message: xhr.responseJSON?.message || 'Invalid passcode.',
+                position: 'topRight'
+            });
+        }
+    });
+});
+
 </script>
+
 @endsection

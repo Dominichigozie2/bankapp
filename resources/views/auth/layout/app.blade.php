@@ -25,9 +25,9 @@
     <meta name="keywords"
         content="admin dashboard template, admin template, TailwindCSS dashboard, react admin, angular admin, laravel admin, 21 frameworks support, responsive dashboard, web application template, dark mode, RTL support, Vue, MVC, Blazor, PHP, Node.js, Django, Flask, Symfony, CodeIgniter" />
 <link rel="modulepreload" crossorigin href="assets/admin.bundle-9LCnK6yO.js">
-    <link rel="modulepreload" crossorigin href="{{asset("assets/layout-Ce54t42U.js")}}">
-    <link rel="modulepreload" crossorigin href="{{asset("assets/main-1p2CIAJu.js")}}">
-    <link rel="stylesheet" crossorigin href="{{asset("assets/css/admin.css")}}">
+    <link rel="modulepreload" crossorigin href="{{asset("asset/layout-Ce54t42U.js")}}">
+    <link rel="modulepreload" crossorigin href="{{asset("asset/main-1p2CIAJu.js")}}">
+    <link rel="stylesheet" crossorigin href="{{asset("asset/css/admin.css")}}">
     <!-- iziToast CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/izitoast@1.4.0/dist/css/iziToast.min.css">
 
@@ -43,10 +43,11 @@
 
         <!-- iziToast JS -->
     <script src="https://cdn.jsdelivr.net/npm/izitoast@1.4.0/dist/js/iziToast.min.js"></script>
-    <script type="module" crossorigin src="{{asset("assets/js/auth-signin-basic.js")}}"></script>
-    <script type="module" crossorigin src="{{asset("assets/admin.bundle-9LCnK6yO.js")}}"></script>
-    <script type="module" crossorigin src="{{asset("assets/layout-Ce54t42U.js")}}"></script>
-    <script type="module" crossorigin src="{{asset("assets/main-1p2CIAJu.js")}}"></script>
+    
+    <script type="module" crossorigin src="{{asset("asset/js/auth-signin-basic.js")}}"></script>
+    <script type="module" crossorigin src="{{asset("asset/admin.bundle-9LCnK6yO.js")}}"></script>
+    <script type="module" crossorigin src="{{asset("asset/layout-Ce54t42U.js")}}"></script>
+    <script type="module" crossorigin src="{{asset("asset/main-1p2CIAJu.js")}}"></script>
     @yield('scripts')
 </body>
 

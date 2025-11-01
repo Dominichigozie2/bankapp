@@ -4,6 +4,13 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\AdminLoginController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AdminDepositController;
+use App\Http\Controllers\DepositController;
+use App\Http\Controllers\AdminController;
+use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -16,22 +23,82 @@ Route::post('/register', [RegisterController::class, 'store'])->name('register.p
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
+
+Route::post('/user/save-passcode', [LoginController::class, 'savePasscode'])->name('user.save.passcode');
+
+Route::post('/user/verify-passcode', [LoginController::class, 'verifyPasscode'])->name('user.verify.passcode');
+
+Route::post('/admin/toggle-passcode/{user}', [AdminController::class, 'togglePasscode']);
+
+
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('admin.login');
 Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin.login.post');
 
 
+
 Route::middleware(['auth'])->group(function () {
-    Route::get('/account/dashboard', function () {
-        return view('account.user.index');
-    })->name('account.user.index');
+
+
+    Route::get('/account/dashboard', [DashboardController::class, 'dashboard'])->name('account.user.index');
 
     Route::get('/admin/dashboard', function () {
         return view('account.admin.index');
     })->name('admin.dashboard');
-    
+
     Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
 
+
+    Route::get('/admin/user', [UserController::class, 'index'])->name('admin.user.index');
+    Route::post('/admin/user', [UserController::class, 'store'])->name('admin.user.store');
+    Route::get('/admin/user/view/{id}', [UserController::class, 'show'])->name('admin.user.show');
+    Route::post('/admin/user/verify/{id}', [UserController::class, 'verify'])->name('admin.user.verify');
+    Route::delete('/admin/user/delete/{id}', [UserController::class, 'destroy'])->name('admin.user.destroy');
+
+ // Show deposit page
+    Route::get('/account/deposit', [DepositController::class, 'create'])->name('user.deposit.create');
+
+    // Handle deposit submission
+    Route::post('/account/deposit', [DepositController::class, 'store'])->name('user.deposit.store');
+
+    Route::get('admin/deposit', [AdminDepositController::class, 'index'])->name('admin.deposit');
+
+    Route::post('/admin/deposit/approve/{id}', [AdminDepositController::class, 'approve'])->name('admin.deposit.approve');
+
+    Route::post('admin/deposit/reject/{id}', [AdminDepositController::class, 'reject'])->name('admin.deposit.reject');
+
+    
+    Route::get('/account/cards', function () {
+        return view('account.user.cards');
+    })->name('user.cards');
+
+    Route::get('/account/transfer', function () {
+        return view('account.user.transfer');
+    })->name('user.transfer');
+
+    Route::get('/account/loan', function () {
+        return view('account.user.loan');
+    })->name('user.loan');
+
+    Route::get('/account/loanhistory', function () {
+        return view('account.user.loanhistory');
+    })->name('user.loanhistory');
+
+    Route::get('/account/bankhistory', function () {
+        return view('account.user.bankhistory');
+    })->name('user.bankhistory');
+
+    Route::get('/account/profile', function () {
+        return view('account.user.profile');
+    })->name('user.profile');
+
+    Route::get('/account/kyc', function () {
+        return view('account.user.kyc');
+    })->name('user.kyc');
+
+    Route::get('/account/report', function () {
+        return view('account.user.report');
+    })->name('user.kyc');
 
 });

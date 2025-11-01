@@ -9,7 +9,7 @@ use App\Models\AccountType;
 use App\Models\Currency;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\RegistrationPasscodeMail;
+use App\Mail\Registration;
 
 class RegisterController extends Controller
 {
@@ -32,9 +32,9 @@ class RegisterController extends Controller
             'currency_id' => 'required|exists:currencies,id',
             'password' => 'required|min:6|confirmed',
         ]);
-
-        // Generate a random 6-digit passcode
-        $passcode = rand(100000, 999999);
+        // Generate random unique account numbers
+        $currentAccountNumber = $this->generateAccountNumber();
+        $savingsAccountNumber = $this->generateAccountNumber();
 
         // Create user
         $user = User::create([
@@ -45,16 +45,31 @@ class RegisterController extends Controller
             'account_type_id' => $validated['account_type_id'], // ✅ fixed
             'currency_id' => $validated['currency_id'],        // ✅ fixed
             'password' => Hash::make($validated['password']),
-            'passcode' => $passcode,
             'balance' => 0,
             'role' => 'user',
+            'current_account_number' => $currentAccountNumber,
+            'savings_account_number' => $savingsAccountNumber,
+            'passcode' => null, // Ensure it's null for first login tracking
+            'passcode_allow' => true,
         ]);
 
         // Send email with passcode
-        Mail::to($user->email)->send(new RegistrationPasscodeMail($user->first_name, $passcode));
+        Mail::to($user->email)->send(new Registration($user->first_name, $currentAccountNumber));
         return response()->json([
             'success' => true,
             'message' => 'Registration successful! Check your email for your passcode.',
         ]);
+    }
+
+    private function generateAccountNumber()
+    {
+        do {
+            $number = mt_rand(1000000000, 9999999999); // 10 digits
+        } while (User::where('current_account_number', $number)
+            ->orWhere('savings_account_number', $number)
+            ->exists()
+        );
+    
+        return $number;
     }
 }
