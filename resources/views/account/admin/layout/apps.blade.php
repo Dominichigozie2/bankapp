@@ -35,21 +35,28 @@
     </head>
 
     
-    <body data-layout="horizontal" data-topbar="dark">
+    <body data-layout="vertical">
+    <div id="layout-wrapper">
+        {{-- Header --}}
         <div id="layout-wrapper">
-            @include('account.admin.layout.header');
-            <div class="main-content">
 
-                <!-- ✅ Page Content -->
-                @yield('content');
+            {{-- Header --}}
+            @include('account.user.layout.header')
 
-                @include('account.admin.layout.footer');
-                
+            <div class="d-flex">
+                {{-- Sidebar --}}
+                @include('account.user.layout.sidebar')
+
+                {{-- Main Content --}}
+                <div class="main-content flex-grow-1">
+                    @yield('content')
+                    @include('account.user.layout.footer')
+                </div>
             </div>
-            
+
         </div>
-        @include('account.admin.layout.sidebar');
-        
+
+    </div>
     <!-- jQuery (required for AJAX) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 

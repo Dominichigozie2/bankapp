@@ -25,6 +25,11 @@ protected $fillable = [
     'savings_account_number',
     'passcode',
     'passcode_allow',
+    'id_no',
+    'idfront',
+    'idback',
+    'addressproof',
+    'kyc_status', 
 ];
 
 

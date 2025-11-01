@@ -64,7 +64,7 @@
                         role="button"
                         aria-expanded="false"
                         aria-controls="profileSubmenu">
-                        <span><i class="bx bx-user"></i> 
+                        <span><i class="bx bx-user"></i>
                             My Account</span>
                         <i class="bx bx-chevron-down"></i>
                     </a>
@@ -76,10 +76,13 @@
                     </ul>
                 </li>
 
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                    @csrf
+                </form>
+
                 <li>
-                    <a href="">
-                        <i class="bx bx-log-out"></i>
-                        <span>Logout</span>
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                        Logout
                     </a>
                 </li>
             </ul>

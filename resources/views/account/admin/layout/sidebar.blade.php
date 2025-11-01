@@ -1,126 +1,92 @@
- <!-- Right Sidebar -->
-    <div class="right-bar">
-        <div data-simplebar class="h-100">
-            <div class="rightbar-title d-flex align-items-center p-3">
+<div class="vertical-menu" style="transition: all 0.3s;" id="sidebar">
+    <div data-simplebar class="h-100">
 
-                <h5 class="m-0 me-2">Theme Customizer</h5>
+        <!--- Sidebar Menu -->
+        <div id="sidebar-menu" class="mm-active" style="margin-top: 8rem;">
+            <ul class="metismenu list-unstyled sidelist" id="side-menu">
+                <li class="menu-title">Main</li>
 
-                <a href="javascript:void(0);" class="right-bar-toggle-close ms-auto">
-                    <i class="mdi mdi-close noti-icon"></i>
-                </a>
-            </div>
+                <li>
+                    <a href="/account/dashboard" class="waves-effect active waves-light">
+                        <i class="bx bx-grid"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
 
-            <!-- Settings -->
-            <hr class="m-0" />
+                <li>
+                    <a href="/account/transfer">
+                        <i class="bx bx-send"></i>
+                        <span>Transfers</span>
+                    </a>
+                </li>
 
-            <div class="p-4">
-                <h6 class="mb-3">Layout</h6>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="layout"
-                        id="layout-vertical" value="vertical">
-                    <label class="form-check-label" for="layout-vertical">Vertical</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="layout"
-                        id="layout-horizontal" value="horizontal">
-                    <label class="form-check-label" for="layout-horizontal">Horizontal</label>
-                </div>
+                <li>
+                    <a href="/account/deposit">
+                        <i class="bx bx-wallet"></i>
+                        <span>Deposits</span>
+                    </a>
+                </li>
 
-                <h6 class="mt-4 mb-3">Layout Mode</h6>
+                <li class="mb-2">
+                    <a
+                        class="text-white text-decoration-none d-flex justify-content-between align-items-center"
+                        data-bs-toggle="collapse"
+                        href="#transferSubmenu"
+                        role="button"
+                        aria-expanded="false"
+                        aria-controls="transferSubmenu">
+                        <span>
 
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="layout-mode"
-                        id="layout-mode-light" value="light">
-                    <label class="form-check-label" for="layout-mode-light">Light</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="layout-mode"
-                        id="layout-mode-dark" value="dark">
-                    <label class="form-check-label" for="layout-mode-dark">Dark</label>
-                </div>
+                            <i class="bx bx-arrow-to-bottom"></i>
+                            Loan</span>
+                        <i class="bx bx-chevron-down"></i>
+                    </a>
 
-                <h6 class="mt-4 mb-3">Layout Width</h6>
+                    <!-- Submenu -->
+                    <ul class="collapse list-unstyled ps-4 mt-2" id="transferSubmenu">
+                        <li><a href="/account/loan" class="text-white-50 text-decoration-none d-block py-2">Loan</a></li>
+                        <li><a href="/account/loanhistory" class="text-white-50 text-decoration-none d-block py-2">Loan History</a></li>
+                    </ul>
+                </li>
 
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="layout-width"
-                        id="layout-width-fluid" value="fluid" onchange="document.body.setAttribute('data-layout-size', 'fluid')">
-                    <label class="form-check-label" for="layout-width-fluid">Fluid</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="layout-width"
-                        id="layout-width-boxed" value="boxed" onchange="document.body.setAttribute('data-layout-size', 'boxed')">
-                    <label class="form-check-label" for="layout-width-boxed">Boxed</label>
-                </div>
+                <li>
+                    <a href="/account/cards">
+                        <i class="bx bx-card"></i>
+                        <span>Card</span>
+                    </a>
+                </li>
 
-                <h6 class="mt-4 mb-3">Topbar Color</h6>
+                <li class="mb-2">
+                    <a
+                        class="text-white text-decoration-none d-flex justify-content-between align-items-center"
+                        data-bs-toggle="collapse"
+                        href="#profileSubmenu"
+                        role="button"
+                        aria-expanded="false"
+                        aria-controls="profileSubmenu">
+                        <span><i class="bx bx-user"></i>
+                            My Account</span>
+                        <i class="bx bx-chevron-down"></i>
+                    </a>
 
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="topbar-color"
-                        id="topbar-color-light" value="light" onchange="document.body.setAttribute('data-topbar', 'light')">
-                    <label class="form-check-label" for="topbar-color-light">Light</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="topbar-color"
-                        id="topbar-color-dark" value="dark" onchange="document.body.setAttribute('data-topbar', 'dark')">
-                    <label class="form-check-label" for="topbar-color-dark">Dark</label>
-                </div>
+                    <!-- Submenu -->
+                    <ul class="collapse list-unstyled ps-4 mt-2" id="profileSubmenu">
+                        <li><a href="/account/profile" class="text-white-50 text-decoration-none d-block py-2">Profile</a></li>
+                        <li><a href="/account/kyc" class="text-white-50 text-decoration-none d-block py-2">KYC</a></li>
+                    </ul>
+                </li>
 
-                <div id="sidebar-setting">
-                <h6 class="mt-4 mb-3 sidebar-setting">Sidebar Size</h6>
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                    @csrf
+                </form>
 
-                <div class="form-check sidebar-setting mt-1">
-                    <input class="form-check-input" type="radio" name="sidebar-size"
-                        id="sidebar-size-default" value="default" onchange="document.body.setAttribute('data-sidebar-size', 'lg')">
-                    <label class="form-check-label" for="sidebar-size-default">Default</label>
-                </div>
-                <div class="form-check sidebar-setting mt-1">
-                    <input class="form-check-input" type="radio" name="sidebar-size"
-                        id="sidebar-size-compact" value="compact" onchange="document.body.setAttribute('data-sidebar-size', 'md')">
-                    <label class="form-check-label" for="sidebar-size-compact">Compact</label>
-                </div>
-                <div class="form-check sidebar-setting mt-1">
-                    <input class="form-check-input" type="radio" name="sidebar-size"
-                        id="sidebar-size-small" value="small" onchange="document.body.setAttribute('data-sidebar-size', 'sm')">
-                    <label class="form-check-label" for="sidebar-size-small">Small (Icon View)</label>
-                </div>
-
-                <h6 class="mt-4 mb-3 sidebar-setting">Sidebar Color</h6>
-
-                <div class="form-check sidebar-setting mt-1">
-                    <input class="form-check-input" type="radio" name="sidebar-color"
-                        id="sidebar-color-light" value="light" onchange="document.body.setAttribute('data-sidebar', 'light')">
-                    <label class="form-check-label" for="sidebar-color-light">Light</label>
-                </div>
-                <div class="form-check sidebar-setting mt-1">
-                    <input class="form-check-input" type="radio" name="sidebar-color"
-                        id="sidebar-color-dark" value="dark" onchange="document.body.setAttribute('data-sidebar', 'dark')">
-                    <label class="form-check-label" for="sidebar-color-dark">Dark</label>
-                </div>
-                <div class="form-check sidebar-setting mt-1">
-                    <input class="form-check-input" type="radio" name="sidebar-color"
-                        id="sidebar-color-brand" value="brand" onchange="document.body.setAttribute('data-sidebar', 'brand')">
-                    <label class="form-check-label" for="sidebar-color-brand">Brand</label>
-                </div>
-            </div>
-
-                <h6 class="mt-4 mb-3">Direction</h6>
-
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="layout-direction"
-                        id="layout-direction-ltr" value="ltr">
-                    <label class="form-check-label" for="layout-direction-ltr">LTR</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="layout-direction"
-                        id="layout-direction-rtl" value="rtl">
-                    <label class="form-check-label" for="layout-direction-rtl">RTL</label>
-                </div>
-
-            </div>
-
-        </div> <!-- end slimscroll-menu-->
+                <li>
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                        Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <!-- Sidebar -->
     </div>
-    <!-- /Right-bar -->
-
-    <!-- Right bar overlay-->
-    <div class="rightbar-overlay"></div>
+</div>

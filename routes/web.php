@@ -9,6 +9,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AdminDepositController;
 use App\Http\Controllers\DepositController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CardController;
+use App\Http\Controllers\UserProfileController;
 use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 Route::get('/', function () {
@@ -51,13 +53,25 @@ Route::middleware(['auth'])->group(function () {
 
 
     Route::get('/admin/user', [UserController::class, 'index'])->name('admin.user.index');
+
     Route::post('/admin/user', [UserController::class, 'store'])->name('admin.user.store');
+
     Route::get('/admin/user/view/{id}', [UserController::class, 'show'])->name('admin.user.show');
+
     Route::post('/admin/user/verify/{id}', [UserController::class, 'verify'])->name('admin.user.verify');
+
     Route::delete('/admin/user/delete/{id}', [UserController::class, 'destroy'])->name('admin.user.destroy');
 
- // Show deposit page
+    // Show deposit page
     Route::get('/account/deposit', [DepositController::class, 'create'])->name('user.deposit.create');
+
+    // Admin KYC Management
+    Route::get('/admin/kyc', [AdminController::class, 'kycIndex'])->name('admin.kyc.index');
+
+    Route::post('/admin/kyc/approve/{id}', [AdminController::class, 'approveKYC'])->name('admin.kyc.approve');
+
+    Route::post('/admin/kyc/reject/{id}', [AdminController::class, 'rejectKYC'])->name('admin.kyc.reject');
+
 
     // Handle deposit submission
     Route::post('/account/deposit', [DepositController::class, 'store'])->name('user.deposit.store');
@@ -68,10 +82,30 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('admin/deposit/reject/{id}', [AdminDepositController::class, 'reject'])->name('admin.deposit.reject');
 
-    
+    // Profile page view
+    Route::get('/account/profile', [UserProfileController::class, 'index'])->name('account.profile');
+
+    // Update user profile
+    Route::post('/user/profile/update', [UserProfileController::class, 'updateProfile'])->name('user.profile.update');
+
+    // Update password
+    Route::post('/user/password/update', [UserProfileController::class, 'updatePassword'])->name('user.password.update');
+
+    // Update passcode
+    Route::post('/user/passcode/update', [UserProfileController::class, 'updatePasscode'])->name('user.passcode.update');
+
+
+
     Route::get('/account/cards', function () {
         return view('account.user.cards');
     })->name('user.cards');
+
+    // User card routes
+    Route::post('/user/request-card', [CardController::class, 'requestCard'])
+        ->name('user.cards.request');
+
+    Route::get('/account/card', [CardController::class, 'showUserCardPage'])->name('user.cards');
+
 
     Route::get('/account/transfer', function () {
         return view('account.user.transfer');
@@ -97,8 +131,10 @@ Route::middleware(['auth'])->group(function () {
         return view('account.user.kyc');
     })->name('user.kyc');
 
+    Route::post('/user/kyc/submit', [UserProfileController::class, 'submitKYC'])
+        ->name('user.kyc.submit');
+
     Route::get('/account/report', function () {
         return view('account.user.report');
     })->name('user.kyc');
-
 });
