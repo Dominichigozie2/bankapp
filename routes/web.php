@@ -11,6 +11,7 @@ use App\Http\Controllers\DepositController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\AdminCardController;
 use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 Route::get('/', function () {
@@ -96,15 +97,26 @@ Route::middleware(['auth'])->group(function () {
 
 
 
-    Route::get('/account/cards', function () {
-        return view('account.user.cards');
-    })->name('user.cards');
+    // Route::get('/account/cards', function () {
+    //     return view('account.user.cards');
+    // })->name('user.cards');
 
-    // User card routes
-    Route::post('/user/request-card', [CardController::class, 'requestCard'])
-        ->name('user.cards.request');
+    // // User card routes
+    // Route::post('/user/request-card', [CardController::class, 'requestCard'])
+    //     ->name('user.cards.request');
 
-    Route::get('/account/card', [CardController::class, 'showUserCardPage'])->name('user.cards');
+    // Route::get('/account/card', [CardController::class, 'showUserCardPage'])->name('user.cards');
+
+    
+// USER
+Route::get('/account/cards', [CardController::class, 'showUserCardPage'])->name('user.cards');
+Route::post('/user/request-card', [CardController::class, 'requestCard'])->name('user.cards.request');
+
+// ADMIN
+Route::get('/admin/cards', [AdminCardController::class, 'index'])->name('admin.cards');
+Route::post('/admin/cards/approve/{id}', [AdminCardController::class, 'approve'])->name('admin.cards.approve');
+Route::post('/admin/cards/hold/{id}', [AdminCardController::class, 'hold'])->name('admin.cards.hold');
+Route::post('/admin/cards/reject/{id}', [AdminCardController::class, 'reject'])->name('admin.cards.reject');
 
 
     Route::get('/account/transfer', function () {

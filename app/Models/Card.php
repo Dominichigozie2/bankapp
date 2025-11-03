@@ -13,14 +13,18 @@ class Card extends Model
         'card_limit','card_limit_remain','card_status'
     ];
 
-    // Optionally hide encrypted fields from array/JSON
     protected $hidden = ['card_number', 'card_security'];
 
-    // Accessor - show masked number when needed
     protected function maskedNumber(): Attribute
     {
         return Attribute::get(function () {
             return '**** **** **** ' . ($this->last4 ?? '1234');
         });
+    }
+
+    // ✅ Add this relationship
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

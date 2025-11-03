@@ -1,159 +1,221 @@
-<style>
-    /* Gradient Card Styling */
-    .credit-card {
-        width: 100%;
-        max-width: 400px;
-        height: 18rem;
-        border-radius: 20px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: #fff;
-        padding: 25px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s ease-in-out;
-    }
-
-    .credit-card .chip {
-        width: 50px;
-        height: 35px;
-        background: linear-gradient(180deg, #e0e0e0, #bdbdbd);
-        border-radius: 8px;
-        margin-bottom: 20px;
-    }
-
-    .credit-card .card-number {
-        font-size: 1.1rem;
-        letter-spacing: 3px;
-        margin-bottom: 15px;
-    }
-
-    .credit-card .card-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .credit-card .card-name {
-        font-weight: 600;
-        font-size: 1rem;
-    }
-
-    .credit-card .amount {
-        font-size: 1rem;
-        font-weight: bold;
-        background: rgba(255, 255, 255, 0.2);
-        padding: 6px 10px;
-        border-radius: 10px;
-    }
-
-    /* blurred card details for pending/hidden state */
-    .credit-card .blurred {
-        filter: blur(4px);
-    }
-</style>
-
 @extends('account.user.layout.app')
 
 @section('content')
-<div class="page-content">
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6 text-center">
-                
-                {{-- If user already has a card --}}
-                @if(isset($card))
-                    <div class="credit-card mx-auto mb-4">
-                        <div class="chip"></div>
+<style>
+.credit-card {
+  width: 100%;
+  max-width: 400px;
+  height: 230px;
+  perspective: 1000px;
+  margin: auto;
+  position: relative;
+}
 
-                        {{-- Only show **** for details --}}
-                        <div class="card-number blurred">**** **** **** ****</div>
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+}
 
-                        <div class="card-footer">
-                            <div class="card-name">{{ Auth::user()->first_name }} {{ Auth::user()->last_name }}</div>
-                            <div class="amount">${{ number_format(Auth::user()->balance ?? 0, 2) }}</div>
-                        </div>
-                    </div>
+.credit-card:hover .card-inner {
+  transform: rotateY(180deg);
+}
 
-                    <div class="alert alert-info mt-3">
-                        You have already requested a card. Please wait for admin approval.
-                    </div>
+.card-front, .card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 15px;
+  backface-visibility: hidden;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  padding: 20px;
+  font-family: 'Poppins', sans-serif;
+}
 
-                {{-- If user has not requested --}}
-                @else
-                    <!-- Credit Card Preview -->
-                    <div class="credit-card mx-auto mb-4">
-                        <div class="chip"></div>
-                        <div class="card-number">**** **** **** 1234</div>
-                        <div class="card-footer">
-                            <div class="card-name">{{ Auth::user()->first_name }} {{ Auth::user()->last_name }}</div>
-                            <div class="amount">${{ number_format(Auth::user()->balance ?? 0, 2) }}</div>
-                        </div>
-                    </div>
+.card-front {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+}
 
-                    <!-- Request Card Form -->
-                    <div class="card shadow-sm border-0">
-                        <div class="card-body">
-                            <h5 class="card-title mb-3">Request New Card</h5>
-                            <form id="requestCardForm">
-                                @csrf
-                                <div class="mb-3 text-start">
-                                    <label for="accountType" class="form-label">Select Account Type</label>
-                                    <select class="form-select" id="accountType" name="account_type" required>
-                                        <option value="">Choose...</option>
-                                        <option value="savings">Savings Account</option>
-                                        <option value="current">Current Account</option>
-                                        <option value="business">Business Account</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3 text-start">
-                                    <label for="pinCode" class="form-label">Account PIN Code</label>
-                                    <input type="password" id="pinCode" name="pin" class="form-control" placeholder="Enter 6-digit PIN" maxlength="6" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100">Request Card</button>
-                            </form>
-                        </div>
-                    </div>
-                @endif
+.card-back {
+  background: linear-gradient(135deg, #764ba2, #667eea);
+  transform: rotateY(180deg);
+}
 
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-logo {
+  height: 40px;
+}
+
+.card-chip {
+  width: 50px;
+  margin-top: 10px;
+}
+
+.card-type {
+  font-size: 1rem;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.card-number {
+  font-size: 1.3rem;
+  letter-spacing: 3px;
+  margin-top: 20px;
+}
+
+.card-name {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.copy-btn {
+  margin-top: 15px;
+}
+</style>
+
+<div class="page-content mt-5">
+  <div class="container text-center">
+
+    {{-- 🪪 If no card --}}
+    @if(!$card)
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5>Request New Card</h5>
+          <form id="requestCardForm">
+            @csrf
+            <div class="mb-3 text-start">
+              <label>Account Type</label>
+              <select class="form-select" name="account_type" required>
+                <option value="">Choose...</option>
+                <option value="savings">Savings</option>
+                <option value="current">Current</option>
+                <option value="business">Business</option>
+              </select>
             </div>
+            <div class="mb-3 text-start">
+              <label>Account PIN</label>
+              <input type="password" name="pin" maxlength="6" class="form-control" required>
+            </div>
+            <button class="btn btn-primary w-100">Request Card</button>
+          </form>
         </div>
-    </div>
+      </div>
+
+    @else
+      {{-- 🕒 Pending --}}
+      @if($card->card_status == 2)
+        <div class="credit-card mt-3">
+          <div class="card-front d-flex flex-column justify-content-center align-items-center">
+            <h5>**** **** **** ****</h5>
+            <p>Awaiting admin approval...</p>
+          </div>
+        </div>
+        <div class="alert alert-info mt-3">
+          You have already requested a card. Please wait for admin approval.
+        </div>
+
+      {{-- 🟡 On Hold --}}
+      @elseif($card->card_status == 3)
+        <div class="credit-card mt-3">
+          <div class="card-front d-flex flex-column justify-content-center align-items-center">
+            <h5>**** **** **** ****</h5>
+            <p>Your card request is currently on hold. Please contact support.</p>
+          </div>
+        </div>
+        <div class="alert alert-warning mt-3">
+          Your card is currently on hold. Kindly contact customer service for assistance.
+        </div>
+
+      {{-- ✅ Approved --}}
+      @elseif($card->card_status == 1)
+        <div class="credit-card mt-3">
+          <div class="card-inner">
+            {{-- Front --}}
+            <div class="card-front">
+              <div class="card-header">
+                <img src="/assets/images/logo-sm.svg"" alt="Logo" class="card-logo">
+                <div class="card-type text-end">
+                  <div>Debit Card</div>
+                  <img src="{{ asset(path: 'assets/images/visa.png') }}" alt="Visa" width="60">
+                </div>
+              </div>
+
+              <img src="{{ asset('assets/images/chip.png') }}" alt="Chip" class="card-chip">
+              <div class="card-number">{{ chunk_split($card->card_number, 4, ' ') }}</div>
+              <div class="card-name">{{ $card->card_name }}</div>
+            </div>
+
+            {{-- Back --}}
+            <div class="card-back">
+              <div style="background:#000;height:40px;margin-top:10px;"></div>
+              <div style="margin-top:30px;text-align:right;">
+                <strong>CVV: {{ $card->card_security }}</strong>
+              </div>
+              <div class="mt-4">
+                <small>Expires: {{ $card->card_expiration }}</small><br>
+                <!-- <small>Serial: {{ $card->serial_key }}</small><br> -->
+                <!-- <small>Internet ID: {{ $card->internet_id }}</small> -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {{-- Copy Card Details Button --}}
+        <button class="btn btn-outline-light mt-3 copy-btn" id="copyCardBtn">
+          Copy Card Details
+        </button>
+      @endif
+    @endif
+  </div>
 </div>
-@endsection
 
 @section('scripts')
 <script>
-$(function(){
-  $('#requestCardForm').on('submit', function(e){
-    e.preventDefault();
-    const btn = $(this).find('button[type=submit]');
-    btn.prop('disabled', true).text('Processing...');
+$('#requestCardForm').submit(function(e){
+  e.preventDefault();
+  const btn = $(this).find('button');
+  btn.prop('disabled', true).text('Processing...');
+  
+  $.ajax({
+    url: '{{ route("user.cards.request") }}',
+    method: 'POST',
+    data: $(this).serialize(),
+    dataType: 'json'
+  })
+  .done(res=>{
+    if(res.success){ iziToast.success({ title: 'Success', message: res.message }); setTimeout(()=>location.reload(), 1500); }
+    else { iziToast.error({ title: 'Error', message: res.message }); }
+  })
+  .fail(()=>{ iziToast.error({ title: 'Error', message: 'Something went wrong.' }); })
+  .always(()=>{ btn.prop('disabled', false).text('Request Card'); });
+});
 
-    const payload = {
-      _token: $('input[name=_token]').val(),
-      account_type: $('#accountType').val(),
-      pin: $('#pinCode').val()
-    };
+$('#copyCardBtn').click(function(){
+  const details = `
+Card Number: {{ $card->card_number }}
+Card Name: {{ $card->card_name }}
+Expiry: {{ $card->card_expiration }}
+CVV: {{ $card->card_security }}
+Serial: {{ $card->serial_key }}
+Internet ID: {{ $card->internet_id }}
+  `.trim();
 
-    $.ajax({
-      url: '{{ route("user.cards.request") }}',
-      method: 'POST',
-      data: payload,
-      dataType: 'json'
-    }).done(function(res){
-      if(res.success){
-        iziToast.success({ title: 'Success', message: res.message });
-        location.reload(); // reload page to show card view
-      } else {
-        iziToast.error({ title: 'Error', message: res.message });
-      }
-    }).fail(function(){
-      iziToast.error({ title: 'Error', message: 'Something went wrong.' });
-    }).always(function(){
-      btn.prop('disabled', false).text('Request Card');
-    });
+  navigator.clipboard.writeText(details).then(()=>{
+    iziToast.success({ title: 'Copied', message: 'Card details copied to clipboard.' });
   });
 });
 </script>
+@endsection
 @endsection
