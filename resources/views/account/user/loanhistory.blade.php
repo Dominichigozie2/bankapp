@@ -8,29 +8,82 @@
             <div class="row justify-content-center">
                 <div class="col-md-10">
                     <div class="card shadow-sm border-0">
-                        <div class="card-body">
-                            <h4 class="card-title mb-4 text-center">Loan History</h4>
-                            <div class="table-responsive">
+                        <div class="mt-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Loan History</h5>
+                            </div>
+                            <div class="card-body">
                                 <table class="table table-bordered table-hover align-middle">
                                     <thead class="table-dark">
                                         <tr>
-                                            <th>S/N</th>
+                                            <th>#</th>
                                             <th>Amount</th>
                                             <th>Type</th>
                                             <th>Duration</th>
+                                            <th></th>
                                             <th>Status</th>
                                             <th>Date</th>
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        @forelse($loans as $loan)
+                                        <tr>
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>${{ number_format($loan->amount, 2) }}</td>
+                                            <td>{{ ucfirst($loan->loan_type) }}</td>
+                                            <td>{{ $loan->duration }}</td>
+                                            <td>
+                                                @if($loan->status == 1 && $loan->due_date)
+                                                <span id="countdown-{{ $loan->id }}"></span>
+                                                <script>
+                                                    (function() {
+                                                        const endDate = new Date("{{ $loan->due_date }}").getTime();
+                                                        const el = document.getElementById("countdown-{{ $loan->id }}");
+                                                        const timer = setInterval(() => {
+                                                            const now = new Date().getTime();
+                                                            const distance = endDate - now;
+
+                                                            if (distance <= 0) {
+                                                                el.innerHTML = "<span class='text-danger'>Due</span>";
+                                                                clearInterval(timer);
+                                                                return;
+                                                            }
+
+                                                            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                                                            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                                            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                                                            el.innerHTML = `${days}d ${hours}h ${minutes}m`;
+                                                        }, 1000);
+                                                    })();
+                                                </script>
+                                                @else
+                                                <span class="text-muted">N/A</span>
+                                                @endif
+                                            </td>
+
+                                            <td>
+                                                @if($loan->status == 1)
+                                                <span class="badge bg-success">Active</span>
+                                                @elseif($loan->status == 2)
+                                                <span class="badge bg-warning text-dark">Pending</span>
+                                                @elseif($loan->status == 3)
+                                                <span class="badge bg-danger">Rejected</span>
+                                                @elseif($loan->status == 4)
+                                                <span class="badge bg-info">Completed</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ $loan->created_at->format('d M, Y') }}</td>
+                                        </tr>
+                                        @empty
                                         <tr>
                                             <td colspan="6" class="text-center text-muted">No loan records found.</td>
                                         </tr>
+                                        @endforelse
                                     </tbody>
                                 </table>
                             </div>
-
                         </div>
+
                     </div>
                 </div>
             </div>

@@ -172,4 +172,4 @@
     </div>
 </header>
 
-<div class="hori-overlay"></div>
+<!-- <div class="hori-overlay"></div> -->

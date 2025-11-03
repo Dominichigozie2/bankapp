@@ -44,7 +44,7 @@
 
                     <!-- Submenu -->
                     <ul class="collapse list-unstyled ps-4 mt-2" id="transferSubmenu">
-                        <li><a href="/account/loan" class="text-white-50 text-decoration-none d-block py-2">Loan</a></li>
+                        <li><a href="/account/loans" class="text-white-50 text-decoration-none d-block py-2">Loan</a></li>
                         <li><a href="/account/loanhistory" class="text-white-50 text-decoration-none d-block py-2">Loan History</a></li>
                     </ul>
                 </li>

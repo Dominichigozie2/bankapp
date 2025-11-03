@@ -12,6 +12,8 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\AdminCardController;
+use App\Http\Controllers\LoanController;
+use App\Http\Controllers\AdminLoanController;
 use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 Route::get('/', function () {
@@ -96,40 +98,46 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/user/passcode/update', [UserProfileController::class, 'updatePasscode'])->name('user.passcode.update');
 
 
+    // USER
+    Route::get('/account/cards', [CardController::class, 'showUserCardPage'])->name('user.cards');
+    Route::post('/user/request-card', [CardController::class, 'requestCard'])->name('user.cards.request');
 
-    // Route::get('/account/cards', function () {
-    //     return view('account.user.cards');
-    // })->name('user.cards');
-
-    // // User card routes
-    // Route::post('/user/request-card', [CardController::class, 'requestCard'])
-    //     ->name('user.cards.request');
-
-    // Route::get('/account/card', [CardController::class, 'showUserCardPage'])->name('user.cards');
-
-    
-// USER
-Route::get('/account/cards', [CardController::class, 'showUserCardPage'])->name('user.cards');
-Route::post('/user/request-card', [CardController::class, 'requestCard'])->name('user.cards.request');
-
-// ADMIN
-Route::get('/admin/cards', [AdminCardController::class, 'index'])->name('admin.cards');
-Route::post('/admin/cards/approve/{id}', [AdminCardController::class, 'approve'])->name('admin.cards.approve');
-Route::post('/admin/cards/hold/{id}', [AdminCardController::class, 'hold'])->name('admin.cards.hold');
-Route::post('/admin/cards/reject/{id}', [AdminCardController::class, 'reject'])->name('admin.cards.reject');
+    // ADMIN
+    Route::get('/admin/cards', [AdminCardController::class, 'index'])->name('admin.cards');
+    Route::post('/admin/cards/approve/{id}', [AdminCardController::class, 'approve'])->name('admin.cards.approve');
+    Route::post('/admin/cards/hold/{id}', [AdminCardController::class, 'hold'])->name('admin.cards.hold');
+    Route::post('/admin/cards/reject/{id}', [AdminCardController::class, 'reject'])->name('admin.cards.reject');
 
 
     Route::get('/account/transfer', function () {
         return view('account.user.transfer');
     })->name('user.transfer');
 
-    Route::get('/account/loan', function () {
-        return view('account.user.loan');
-    })->name('user.loan');
+    // Route::get('/account/loanhistory', function () {
+    //     return view('account.user.loanhistory');
+    // })->name('user.loanhistory');
 
-    Route::get('/account/loanhistory', function () {
-        return view('account.user.loanhistory');
-    })->name('user.loanhistory');
+
+    Route::get('/account/loans', [LoanController::class, 'index'])->name('user.loan');
+
+    Route::post('/user/loans/request', [LoanController::class, 'requestLoan'])->name('user.loan.request');
+
+    Route::post('/user/validate-passcode', [LoanController::class, 'validatePasscode'])->name('user.validate.passcode');
+
+
+
+    // Show loan history
+    Route::get('/account/loanhistory', [LoanController::class, 'history'])->name('user.loanhistory');
+
+    Route::get('/admin/loans', [AdminLoanController::class, 'index'])->name('admin.loan');
+
+    Route::post('/admin/loans/approve/{id}', [AdminLoanController::class, 'approve'])->name('admin.loan.approve');
+
+    Route::post('/admin/loans/hold/{id}', [AdminLoanController::class, 'hold'])->name('admin.loan.hold');
+
+    Route::post('/admin/loans/reject/{id}', [AdminLoanController::class, 'reject'])->name('admin.loan.reject');
+
+    Route::post('/admin/loans/limit', [AdminLoanController::class, 'setLimit'])->name('admin.loan.limit');
 
     Route::get('/account/bankhistory', function () {
         return view('account.user.bankhistory');

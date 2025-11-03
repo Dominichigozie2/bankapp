@@ -62,7 +62,6 @@
     .main-content {
         padding: 20px;
         background: #f8f9fc;
-        min-height: 100vh;
     }
 
     .sidelist {
