@@ -1,6 +1,10 @@
 <div class="vertical-menu" style="transition: all 0.3s;" id="sidebar">
-    <div data-simplebar class="h-100">
-
+    <div data-simplebar class="h-100" style="display: flex; flex-direction: column;
+    justify-content: space-between;">
+        <div class="logo" style="width: 100px;padding: 1rem; gap: 1rem; align-items: center; display: flex;">
+            <img src="/assets/images/logo-sm.svg" style="width: 70px;" alt="">
+            <h4>Logo</h4>
+        </div>
         <!--- Sidebar Menu -->
         <div id="sidebar-menu" class="mm-active" style="margin-top: 8rem;">
             <ul class="metismenu list-unstyled sidelist" id="side-menu">
@@ -23,7 +27,7 @@
              
 
                 <li>
-                    <a href="/account/cards">
+                    <a href="/admin/cards">
                         <i class="bx bx-card"></i>
                         <span>Card</span>
                     </a>
@@ -37,23 +41,34 @@
                 </li>
 
                 <li>
-                    <a href="/admin/loan">
+                    <a href="/admin/kyc">
+                        <i class="bx bx-check"></i>
+                        <span>KYC</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/admin/loans">
                         <i class="bx bx-arrow-to-bottom"></i>
                         <span>Loan</span>
                     </a>
                 </li>
 
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                    @csrf
-                </form>
-
-                <li>
-                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                        Logout
-                    </a>
-                </li>
             </ul>
+
         </div>
+        
+        <ul class="logout" style="margin-top: 2rem;">
+              <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                @csrf
+            </form>
+
+            <li>
+                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    Logout
+                </a>
+            </li>
+        </ul>
         <!-- Sidebar -->
     </div>
 </div>

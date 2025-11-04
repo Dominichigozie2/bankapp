@@ -4,6 +4,7 @@
 <head>
 
     <meta charset="utf-8" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Sales Dashboard | Vuesy - Admin & Dashboard Template</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
@@ -91,6 +92,35 @@
             }
         }
     }
+
+    .logout {
+        li {
+            width: 100%;
+            list-style: none;
+
+            a {
+                display: flex;
+                gap: 1rem;
+                align-items: center;
+                font-size: 14px;
+                color: #707070ff !important;
+
+                span {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                }
+
+                &:hover {
+                    color: #9222e7ff !important;
+                }
+            }
+
+            & .active {
+                color: #9222e7ff !important;
+            }
+        }
+    }
 </style>
 
 <body data-layout="vertical">
@@ -140,9 +170,56 @@
     <script src="{{asset("assets/js/pages/dashboard.init.js")}}"></script>
 
     <!-- <script src="{{asset("assets/js/app.js")}}"></script> -->
+    <script>
+        document.getElementById('toggleSidebar').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            const body = document.querySelector('body'); // No need for id
 
+            sidebar.classList.toggle('collapsed');
+
+            if (sidebar.classList.contains('collapsed')) {
+                sidebar.style.marginLeft = "-250px";
+                mainContent.style.marginLeft = "0";
+                body.setAttribute('data-layout', 'horizontal');
+
+            } else {
+                sidebar.style.marginLeft = "0";
+                mainContent.style.marginLeft = "250px";
+                body.setAttribute('data-layout', 'horizontal');
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const currentPath = window.location.pathname;
+            const menuLinks = document.querySelectorAll("#side-menu li a");
+
+            menuLinks.forEach(link => {
+                const linkPath = link.getAttribute("href");
+
+                // If link matches current page URL
+                if (linkPath === currentPath) {
+                    link.classList.add("active");
+
+                    // If link is inside a submenu, expand its parent
+                    const submenu = link.closest(".collapse");
+                    if (submenu) {
+                        submenu.classList.add("show"); // open submenu
+                        const parentToggle = document.querySelector(
+                            `[href="#${submenu.id}"]`
+                        );
+                        if (parentToggle) parentToggle.classList.add("active");
+                    }
+                } else {
+                    link.classList.remove("active");
+                }
+            });
+        });
+    </script>
+
+    @yield('scripts')
 </body>
 
-@yield('scripts')
+
 
 </html>

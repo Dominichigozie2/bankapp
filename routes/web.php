@@ -14,6 +14,8 @@ use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\AdminCardController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\AdminLoanController;
+use App\Http\Controllers\TicketController;
+use App\Http\Controllers\AdminTicketController;
 use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 Route::get('/', function () {
@@ -157,4 +159,27 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/account/report', function () {
         return view('account.user.report');
     })->name('user.kyc');
+
+
+
+
+    // User routes
+    Route::get('/account/tickets', [TicketController::class, 'index'])->name('user.tickets.index'); // list user's tickets
+    Route::get('/account/tickets/create', [TicketController::class, 'create'])->name('user.tickets.create');
+    Route::post('/account/tickets', [TicketController::class, 'store'])->name('user.tickets.store');
+    Route::get('/account/tickets/{ticket}', [TicketController::class, 'show'])->name('user.tickets.show');
+    Route::post('/account/tickets/{ticket}/reply', [TicketController::class, 'reply'])->name('user.tickets.reply');
+    Route::post('/account/tickets/{ticket}/close', [TicketController::class, 'close'])->name('user.tickets.close');
+
+    Route::get('/account/tickethistory', [TicketController::class, 'history'])->name('user.tickethistory');
+
+    Route::post('/account/tickets/{ticket}/reply', [TicketController::class, 'reply'])->name('user.tickets.reply');
+
+    Route::get('/account/tickets/{id}/fetch', [TicketController::class, 'fetch']);
+
+    // ADMIN SUPPORT TICKETS
+    Route::get('/admin/tickets', [AdminTicketController::class, 'index'])->name('admin.tickets');
+    Route::get('/admin/tickets/{id}/fetch', [AdminTicketController::class, 'fetch'])->name('admin.tickets.fetch');
+    Route::post('/admin/tickets/{id}/reply', [AdminTicketController::class, 'reply'])->name('admin.tickets.reply');
+    Route::post('/admin/tickets/{id}/close', [AdminTicketController::class, 'close'])->name('admin.tickets.close');
 });

@@ -1,6 +1,9 @@
 <div class="vertical-menu" style="transition: all 0.3s;" id="sidebar">
     <div data-simplebar class="h-100">
-
+<div class="logo" style="width: 100px;padding: 1rem; gap: 1rem; align-items: center; display: flex;">
+            <img src="/assets/images/logo-sm.svg" style="width: 70px;" alt="">
+            <h4>Logo</h4>
+        </div>
         <!--- Sidebar Menu -->
         <div id="sidebar-menu" class="mm-active" style="margin-top: 8rem;">
             <ul class="metismenu list-unstyled sidelist" id="side-menu">
@@ -56,6 +59,26 @@
                     </a>
                 </li>
 
+                <li class="mb-2">
+                    <a
+                        class="text-white text-decoration-none d-flex justify-content-between align-items-center"
+                        data-bs-toggle="collapse"
+                        href="#ReportSubmenu"
+                        role="button"
+                        aria-expanded="false"
+                        aria-controls="ReportSubmenu">
+                        <span><i class='bx bx-headphone'></i>
+                            Report</span>
+                        <i class="bx bx-chevron-down"></i>
+                    </a>
+
+                    <!-- Submenu -->
+                    <ul class="collapse list-unstyled ps-4 mt-2" id="ReportSubmenu">
+                        <li><a href="/account/report" class="text-white-50 text-decoration-none d-block py-2">Send Report</a></li>
+                        <li><a href="/account/tickethistory" class="text-white-50 text-decoration-none d-block py-2">Reports</a></li>
+                    </ul>
+                </li>
+                
                 <li class="mb-2">
                     <a
                         class="text-white text-decoration-none d-flex justify-content-between align-items-center"
