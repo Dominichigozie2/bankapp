@@ -16,14 +16,26 @@
                         <span>Dashboard</span>
                     </a>
                 </li>
-
-                <li>
-                    <a href="/admin/deposit">
-                        <i class="bx bx-wallet"></i>
-                        <span>Deposit</span>
+                
+                <li class="mb-2">
+                    <a
+                        class="text-white text-decoration-none d-flex justify-content-between align-items-center"
+                        data-bs-toggle="collapse"
+                        href="#DepositSubmenu"
+                        role="button"
+                        aria-expanded="false"
+                        aria-controls="DepositSubmenu">
+                        <span><i class="bx bx-wallet"></i>
+                            Deposit</span>
+                        <i class="bx bx-chevron-down"></i>
                     </a>
-                </li>
 
+                    <!-- Submenu -->
+                    <ul class="collapse list-unstyled ps-4 mt-2" id="DepositSubmenu">
+                        <li><a href="/admin/deposit">Deposit</a></li>
+                        <li><a href="/admin/depositcodes">Deposit Settings</a></li>
+                    </ul>
+                </li>
              
 
                 <li>

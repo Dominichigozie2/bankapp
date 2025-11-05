@@ -1,15 +1,22 @@
+
         @extends('account.user.layout.app')
         @section('content')
+        <style>
+            .roundedcutstom{                
+                border-radius: 15px !important;
+                padding: 3rem 1rem !important;
+            }
+        </style>
         <div class="page-content">
-                <div class="container-fluid py-4">
+                <div class="container-fluid">
 
                     {{-- Wallet Top Card --}}
                     <div class="row mb-4">
                         <div class="col-md-12">
-                            <div class="card bg-primary text-white shadow-sm text-center p-4 rounded">
-                                <h5 class="fw-light text-white">Current Balance</h5>
-                                <h2 class="fw-bold text-white">${{ number_format($currentBalance, 2) }}</h2>
-                                <div class="mt-3">
+                            <div class="card bg-primary text-white shadow-sm text-center roundedcutstom p-4 rounded">
+                                <h5 class="fw-light text-white pb-4">Current Balance</h5>
+                                <h1 class="fw-bold text-white">${{ number_format($currentBalance, 2) }}</h2>
+                                <div class="mt-5">
                                     <button class="btn btn-light btn-sm me-2">Deposit</button>
                                     <button class="btn btn-light btn-sm">Withdraw</button>
                                 </div>
@@ -28,7 +35,7 @@
                         <div class="col-md-3">
                             <div class="card text-center shadow-sm p-3 rounded">
                                 <h6>Total Withdrawals</h6>
-                                <h4>{{ $totalWithdrawals }}</h4>
+                                
                             </div>
                         </div>
                         <div class="col-md-3">

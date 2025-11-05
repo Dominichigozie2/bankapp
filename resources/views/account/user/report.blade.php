@@ -43,6 +43,7 @@
                                                         <option value="">Choose Ticket Type</option>
                                                         <option value="MyAccount">My Account</option>
                                                         <option value="Transfer">Transfer</option>
+                                                        <option value="DepositCode">Deposit Code</option>
                                                         <option value="Security">Security</option>
                                                     </select>
                                                 </div>

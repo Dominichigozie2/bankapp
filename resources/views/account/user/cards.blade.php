@@ -80,7 +80,7 @@
   font-size: 0.9rem;
 }
 
-.copy-btn {
+.copy-btn, .deactivate-btn {
   margin-top: 15px;
 }
 </style>
@@ -145,10 +145,10 @@
             {{-- Front --}}
             <div class="card-front">
               <div class="card-header">
-                <img src="/assets/images/logo-sm.svg"" alt="Logo" class="card-logo">
+                <img src="/assets/images/logo-sm.svg" alt="Logo" class="card-logo">
                 <div class="card-type text-end">
                   <div>Debit Card</div>
-                  <img src="{{ asset(path: 'assets/images/visa.png') }}" alt="Visa" width="60">
+                  <img src="{{ asset('assets/images/visa.png') }}" alt="Visa" width="60">
                 </div>
               </div>
 
@@ -165,21 +165,20 @@
               </div>
               <div class="mt-4">
                 <small>Expires: {{ $card->card_expiration }}</small><br>
-                <!-- <small>Serial: {{ $card->serial_key }}</small><br> -->
-                <!-- <small>Internet ID: {{ $card->internet_id }}</small> -->
               </div>
             </div>
           </div>
         </div>
 
-        {{-- Copy Card Details Button --}}
-        <button class="btn btn-outline-light mt-3 copy-btn" id="copyCardBtn">
-          Copy Card Details
-        </button>
+        {{-- Buttons --}}
+        <button class="btn btn-outline-light mt-3 copy-btn" id="copyCardBtn">Copy Card Details</button>
+        <button class="btn btn-danger mt-2 deactivate-btn" id="deactivateCardBtn">Deactivate Card</button>
       @endif
     @endif
   </div>
 </div>
+@endsection
+
 
 @section('scripts')
 <script>
@@ -202,6 +201,8 @@ $('#requestCardForm').submit(function(e){
   .always(()=>{ btn.prop('disabled', false).text('Request Card'); });
 });
 
+@if($card && $card->card_status == 1)
+// Copy card details
 $('#copyCardBtn').click(function(){
   const details = `
 Card Number: {{ $card->card_number }}
@@ -216,6 +217,33 @@ Internet ID: {{ $card->internet_id }}
     iziToast.success({ title: 'Copied', message: 'Card details copied to clipboard.' });
   });
 });
+
+// Deactivate card
+$('#deactivateCardBtn').click(function(){
+  if(!confirm('Are you sure you want to deactivate this card?')) return;
+
+  const btn = $(this);
+  btn.prop('disabled', true).text('Deactivating...');
+
+  $.ajax({
+    url: '{{ route("user.cards.deactivate") }}',
+    method: 'POST',
+    data: { _token: '{{ csrf_token() }}' },
+    dataType: 'json'
+  })
+  .done(res=>{
+    if(res.success){
+      iziToast.success({ title: 'Deactivated', message: res.message });
+      setTimeout(()=>location.reload(), 1500);
+    } else {
+      iziToast.error({ title: 'Error', message: res.message });
+    }
+  })
+  .fail(()=>{
+    iziToast.error({ title: 'Error', message: 'Something went wrong.' });
+  })
+  .always(()=>{ btn.prop('disabled', false).text('Deactivate Card'); });
+});
+@endif
 </script>
-@endsection
 @endsection

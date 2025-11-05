@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AdminSettingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AdminDepositController;
 use App\Http\Controllers\DepositController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\LoanController;
 use App\Http\Controllers\AdminLoanController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\AdminTicketController;
+use App\Http\Controllers\AdminDepositCodeController;
 use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 Route::get('/', function () {
@@ -104,6 +106,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/account/cards', [CardController::class, 'showUserCardPage'])->name('user.cards');
     Route::post('/user/request-card', [CardController::class, 'requestCard'])->name('user.cards.request');
 
+    Route::post('/account/cards/deactivate', [CardController::class, 'deactivate'])->name('user.cards.deactivate');
+
+
     // ADMIN
     Route::get('/admin/cards', [AdminCardController::class, 'index'])->name('admin.cards');
     Route::post('/admin/cards/approve/{id}', [AdminCardController::class, 'approve'])->name('admin.cards.approve');
@@ -123,6 +128,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/account/loans', [LoanController::class, 'index'])->name('user.loan');
 
     Route::post('/user/loans/request', [LoanController::class, 'requestLoan'])->name('user.loan.request');
+
+    Route::post('/account/loan/repay/{id}', [LoanController::class, 'repayLoan'])->name('user.loan.repay');
 
     Route::post('/user/validate-passcode', [LoanController::class, 'validatePasscode'])->name('user.validate.passcode');
 
@@ -182,4 +189,27 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/tickets/{id}/fetch', [AdminTicketController::class, 'fetch'])->name('admin.tickets.fetch');
     Route::post('/admin/tickets/{id}/reply', [AdminTicketController::class, 'reply'])->name('admin.tickets.reply');
     Route::post('/admin/tickets/{id}/close', [AdminTicketController::class, 'close'])->name('admin.tickets.close');
+
+
+     Route::get('/account/deposit', [DepositController::class,'create'])->name('user.deposit.create');
+    Route::post('/account/deposit', [DepositController::class,'store'])->name('user.deposit.store');
+Route::post('/account/deposit/store', [DepositController::class, 'store'])
+    ->name('user.deposit.store');
+
+    // code checks
+    Route::get('/account/deposit/code-required', [DepositController::class,'codeRequired'])->name('user.deposit.codeRequired');
+    Route::post('/account/deposit/verify-code', [DepositController::class,'verifyCode'])->name('user.deposit.verifyCode');
+
+    // Admin deposit code management
+Route::get('/admin/depositcodes', [AdminDepositCodeController::class, 'index'])->name('admin.depositcodes');
+Route::post('/admin/depositcodes/generate', [AdminDepositCodeController::class, 'generate'])->name('admin.depositcodes.generate');
+Route::post('/admin/depositcodes/revoke/{id}', [AdminDepositCodeController::class, 'revoke'])->name('admin.depositcodes.revoke');
+
+
+Route::get('/admin/settings', [AdminSettingController::class, 'index'])
+    ->name('admin.settings.index');
+
+Route::post('/admin/settings/deposit-code-toggle', [AdminSettingController::class, 'depositCodeToggle'])
+    ->name('admin.settings.depositCodeToggle');
+
 });

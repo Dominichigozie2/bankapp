@@ -23,6 +23,9 @@
                                             <th></th>
                                             <th>Status</th>
                                             <th>Date</th>
+                                            <th>Action</th>
+                                            
+
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -73,6 +76,14 @@
                                                 @endif
                                             </td>
                                             <td>{{ $loan->created_at->format('d M, Y') }}</td>
+                                            @if($loan->status == 1)
+                                            <td>
+                                                                                                        <button class="btn btn-success btn-sm repay-btn" data-id="{{ $loan->id }}">
+                                                            Repay Loan
+                                                        </button>
+                                            </td>
+                                            @endif
+
                                         </tr>
                                         @empty
                                         <tr>
@@ -95,4 +106,46 @@
 
 @endsection
 @section('scripts')
+<script>
+    // 🟢 Repay Loan
+$(document).on('click', '.repay-btn', function() {
+  const id = $(this).data('id');
+
+  iziToast.question({
+    timeout: false,
+    close: false,
+    overlay: true,
+    displayMode: 'once',
+    id: 'repayConfirm',
+    title: 'Confirm Repayment',
+    message: 'Are you sure you want to repay this loan now?',
+    position: 'center',
+    buttons: [
+      ['<button><b>YES</b></button>', function(instance, toast) {
+        instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+        $.ajax({
+          url: '/account/loan/repay/' + id,
+          method: 'POST',
+          data: { _token: '{{ csrf_token() }}' },
+          success: function(res) {
+            if (res.success) {
+              iziToast.success({ title: 'Success', message: res.message });
+              setTimeout(() => location.reload(), 1500);
+            } else {
+              iziToast.error({ title: 'Error', message: res.message });
+            }
+          },
+          error: function(xhr) {
+            iziToast.error({ title: 'Error', message: xhr.responseJSON?.message || 'Something went wrong.' });
+          }
+        });
+      }, true],
+      ['<button>NO</button>', function(instance, toast) {
+        instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+      }]
+    ]
+  });
+});
+
+</script>
 @endsection

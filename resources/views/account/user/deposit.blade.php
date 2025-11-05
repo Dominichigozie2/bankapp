@@ -40,11 +40,15 @@
                         <div class="mb-3">
                             <label for="account_type_id">Account Type</label>
                             <select name="account_type_id" class="form-control" required>
-                                <option value="">Select Account Type</option>
-                                @foreach($accountTypes as $account)
-                                <option value="{{ $account->id }}">{{ $account->name }}</option>
-                                @endforeach
-                            </select>
+                            <option value="">Select Account</option>
+                            @foreach($userAccounts as $acct)
+                                <option value="{{ $acct->id }}" {{ $acct->is_active ? 'selected' : '' }}>
+                                    {{ $acct->accountType->name }} {{ $acct->account_number ? '- '.$acct->account_number : '' }}
+                                </option>
+                            @endforeach
+                        </select>
+
+
                         </div>
 
                         <div class="mb-3">
@@ -81,70 +85,160 @@
         <!-- End Page-content -->
         @endsection
 
-        @section('scripts')
-        <script>
-            // 🔹 Toggle between cheque and mobile forms
-            $('#method').change(function() {
-                var method = $(this).val();
-                $('#chequeForm, #mobileForm').hide();
-                if (method === 'cheque') $('#chequeForm').show();
-                if (method === 'mobile') $('#mobileForm').show();
-            });
+       @section('scripts')
+<script>
+$(document).ready(function() {
 
-            // 🔹 Display crypto wallet address
-            $('#crypto_type_id').change(function() {
-                var wallet = $(this).find(':selected').data('wallet');
-                if (wallet) {
-                    $('#networkDiv').show();
-                    $('#network').val(wallet);
-                } else {
-                    $('#networkDiv').hide();
-                    $('#network').val('');
+    // Toggle forms
+    $('#method').change(function() {
+        var method = $(this).val();
+        $('#chequeForm, #mobileForm').hide();
+        if (method === 'cheque') $('#chequeForm').show();
+        if (method === 'mobile') $('#mobileForm').show();
+    });
+
+    // Handle crypto wallet display
+    $('#crypto_type_id').change(function() {
+        var wallet = $(this).find(':selected').data('wallet');
+        if (wallet) {
+            $('#networkDiv').show();
+            $('#network').val(wallet);
+        } else {
+            $('#networkDiv').hide();
+            $('#network').val('');
+        }
+    });
+
+    // Show code modal helper
+    function showCodeModal(onVerified) {
+        if ($('#depositCodeModal').length === 0) {
+            $('body').append(`
+            <div class="modal fade" id="depositCodeModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5>Enter Deposit Code</h5>
+                            <button class="btn-close" data-bs-dismiss="modal"></button>
+                            
+                        </div>
+                        <div class="modal-body">
+                        <p class="text-danger" style="fontsize: 10px;">Don't have passcode? <br> Request for the deposit passcode by opening a ticket</p>
+                            <div class="mb-3">
+                                <input id="deposit_code_input" class="form-control" placeholder="Enter code" />
+                            </div>
+                            <div id="deposit_code_msg" class="text-danger small"></div>
+                            <button id="verify_deposit_code" class="btn btn-primary w-100">Verify Code</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`);
+        }
+
+        $('#deposit_code_msg').text('');
+        $('#deposit_code_input').val('');
+        $('#depositCodeModal').modal('show');
+
+        $('#verify_deposit_code').off('click').on('click', function() {
+            var code = $('#deposit_code_input').val().trim();
+            if (!code) {
+                $('#deposit_code_msg').text('Please enter the code.');
+                return;
+            }
+
+            // ✅ FIXED: Use FormData and proper AJAX to prevent validation errors
+            let fd = new FormData();
+            fd.append('code', code);
+            fd.append('_token', '{{ csrf_token() }}');
+
+            $.ajax({
+                url: "{{ route('user.deposit.verifyCode') }}",
+                type: "POST",
+                data: fd,
+                processData: false,
+                contentType: false,
+                success: function(resp) {
+                    iziToast.success({ title: 'OK', message: resp.message, position: 'topRight' });
+                    $('#depositCodeModal').modal('hide');
+                    onVerified(code);
+                },
+                error: function(xhr) {
+                    let msg = (xhr.responseJSON && xhr.responseJSON.message)
+                        ? xhr.responseJSON.message
+                        : 'Verification failed';
+                    $('#deposit_code_msg').text(msg);
                 }
             });
+        });
+    }
 
-            // 🔹 AJAX Submission for both forms
-            $('#chequeForm, #mobileForm').on('submit', function(e) {
-                e.preventDefault(); // stop normal form submit
-                var formData = new FormData(this);
-                var method = formData.get('method');
+    // Handle deposit form submission
+    $('#chequeForm, #mobileForm').on('submit', function(e) {
+        e.preventDefault();
 
-                $.ajax({
-                    url: "{{ route('user.deposit.store') }}",
-                    type: "POST",
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    beforeSend: function() {
-                        iziToast.info({
-                            title: 'Please wait...',
-                            message: 'Submitting your ' + method + ' deposit...',
-                            position: 'topRight'
-                        });
-                    },
-                    success: function(response) {
-                        iziToast.success({
-                            title: 'Success!',
-                            message: 'Deposit submitted successfully!',
-                            position: 'topRight'
-                        });
-                        e.target.reset();
-                        $('#method').val('');
-                        $('#chequeForm, #mobileForm').hide();
-                    },
-                    error: function(xhr) {
-                        let errorMessage = 'Something went wrong';
-                        if (xhr.responseJSON && xhr.responseJSON.errors) {
-                            errorMessage = Object.values(xhr.responseJSON.errors).join('<br>');
-                        }
-                        iziToast.error({
-                            title: 'Error',
-                            message: errorMessage,
-                            position: 'topRight'
-                        });
-                    }
+        let form = this;
+        let formData = new FormData(form);
+        let method = formData.get('method');
+
+        // Check if deposit code is required
+        $.get("{{ route('user.deposit.codeRequired') }}")
+            .done(function(resp) {
+                if (resp.required) {
+                    // require deposit code before submit
+                    showCodeModal(function(verifiedCode) {
+                        let newFormData = new FormData(form);
+                        newFormData.append('verified_code', verifiedCode);
+                        submitDepositAjax(newFormData, method, form);
+                    });
+                } else {
+                    submitDepositAjax(formData, method, form);
+                }
+            })
+            .fail(function() {
+                iziToast.error({
+                    title: 'Error',
+                    message: 'Could not check deposit code setting',
+                    position: 'topRight'
                 });
             });
-        </script>
+    });
 
-        @endsection
+    // Core AJAX deposit submit
+    function submitDepositAjax(formData, method, formElem) {
+        $.ajax({
+            url: "{{ route('user.deposit.store') }}",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            beforeSend: function() {
+                iziToast.info({
+                    title: 'Please wait...',
+                    message: 'Submitting your ' + method + ' deposit...',
+                    position: 'topRight'
+                });
+            },
+            success: function(response) {
+                iziToast.success({
+                    title: 'Success!',
+                    message: response.message || 'Deposit submitted successfully!',
+                    position: 'topRight'
+                });
+                formElem.reset();
+                $('#method').val('');
+                $('#chequeForm, #mobileForm').hide();
+            },
+            error: function(xhr) {
+                let errorMessage = 'Something went wrong';
+                if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    errorMessage = Object.values(xhr.responseJSON.errors).join('<br>');
+                } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+                iziToast.error({ title: 'Error', message: errorMessage, position: 'topRight' });
+            }
+        });
+    }
+
+});
+</script>
+@endsection

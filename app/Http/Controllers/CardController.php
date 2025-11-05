@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Mail\CardRequestMail;
+use Illuminate\Support\Facades\Mail;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -56,7 +58,8 @@ class CardController extends Controller
         $internetId = 'INT-' . strtoupper(Str::random(10));
 
         // Store card
-        Card::create([
+        // Store card
+        $card = Card::create([
             'user_id' => $user->id,
             'serial_key' => $serial,
             'internet_id' => $internetId,
@@ -71,6 +74,10 @@ class CardController extends Controller
             'card_status' => 2, // pending
         ]);
 
+        // ✅ Send email notification
+        Mail::to($user->email)->send(new CardRequestMail($user, $card));
+
+
         return response()->json([
             'success' => true,
             'message' => 'Card request submitted successfully. Please wait for admin approval.',
@@ -82,4 +89,21 @@ class CardController extends Controller
         $card = Card::where('user_id', Auth::id())->first();
         return view('account.user.cards', compact('card'));
     }
+
+    public function deactivate(Request $request)
+{
+    $user = auth()->user();
+    $card = $user->card;
+
+    if (!$card || $card->card_status != 1) {
+        return response()->json(['success' => false, 'message' => 'No active card found.']);
+    }
+
+    $card->card_status = 3; // on hold or deactivated
+    $card->save();
+
+    return response()->json(['success' => true, 'message' => 'Your card has been deactivated successfully.']);
+}
+
+
 }

@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\Loan;
 use App\Models\LoanLimit;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\LoanStatusMail;
+
 
 class AdminLoanController extends Controller
 {
@@ -64,6 +67,7 @@ class AdminLoanController extends Controller
                 'success' => true,
                 'message' => 'Loan resumed successfully.'
             ]);
+
         }
 
         // 🧠 Case 3: Normal approval (first time)
@@ -79,10 +83,24 @@ class AdminLoanController extends Controller
         $user->balance = $user->balance + $approvedAmount;
         $user->save();
 
+        Mail::to($user->email)->send(new LoanStatusMail(
+            $user,
+            $loan,
+            'Loan Approved',
+            "Your loan request of $$approvedAmount has been approved. The amount has been credited to your balance. Due date: {$dueDate->toFormattedDateString()}."
+        ));
+
         return response()->json([
             'success' => true,
             'message' => 'Loan approved and credited to user balance.'
         ]);
+
+        Activity::create([
+            'user_id' => $loan->user_id,
+            'description' => "Your loan of $".$loan->amount." has been approved.",
+            'type' => 'loan',
+        ]);
+
     }
 
     // ⏸ Hold Loan
@@ -98,6 +116,13 @@ class AdminLoanController extends Controller
         }
 
         $loan->update(['status' => 3]);
+
+        Mail::to($loan->user->email)->send(new LoanStatusMail(
+            $loan->user,
+            $loan,
+            'Loan On Hold',
+            'Your active loan has been placed on hold by the admin. Please contact support for details.'
+        ));
 
         return response()->json([
             'success' => true,
@@ -118,6 +143,13 @@ class AdminLoanController extends Controller
         }
 
         $loan->update(['status' => 0]);
+
+        Mail::to($loan->user->email)->send(new LoanStatusMail(
+            $loan->user,
+            $loan,
+            'Loan Rejected',
+            'Unfortunately, your loan request has been rejected. You may try again later.'
+        ));
 
         return response()->json([
             'success' => true,
@@ -148,11 +180,20 @@ class AdminLoanController extends Controller
             'due_date' => now(),
         ]);
 
+        Mail::to($loan->user->email)->send(new LoanStatusMail(
+            $loan->user,
+            $loan,
+            'Loan Marked as Paid',
+            'Your loan has been successfully marked as paid. Thank you for fulfilling your obligation.'
+        ));
+
+
         return response()->json([
             'success' => true,
             'message' => 'Loan marked as paid and deducted from user balance.'
         ]);
     }
+
 
     // 🕒 Mark Overdue Loans Automatically
     public function markDueLoans()
@@ -164,6 +205,13 @@ class AdminLoanController extends Controller
         foreach ($dueLoans as $loan) {
             $loan->update(['status' => 4]); // 4 = due
         }
+
+        Mail::to($loan->user->email)->send(new LoanStatusMail(
+            $loan->user,
+            $loan,
+            'Loan Overdue Notice',
+            'Your loan is now overdue. Please repay as soon as possible to avoid penalties.'
+        ));
 
         return response()->json([
             'success' => true,

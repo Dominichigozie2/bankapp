@@ -47,4 +47,15 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\TicketMessage::class, 'user_id');
     }
+
+    public function accounts()
+{
+    return $this->hasMany(\App\Models\UserAccount::class);
+}
+
+public function activeAccount()
+{
+    return $this->hasOne(\App\Models\UserAccount::class)->where('is_active', true);
+}
+
 }
