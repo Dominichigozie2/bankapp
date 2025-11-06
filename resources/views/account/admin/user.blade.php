@@ -56,6 +56,16 @@
                                             <button class="btn btn-info btn-sm viewUser" data-id="{{ $user->id }}"><i class="bi bi-eye"></i></button>
                                             <button class="btn btn-success btn-sm verifyUser" data-id="{{ $user->id }}"><i class="bi bi-check-circle"></i></button>
                                             <button class="btn btn-danger btn-sm deleteUser" data-id="{{ $user->id }}"><i class="bi bi-trash"></i></button>
+                                            @if($user->banned)
+                                            <button class="btn btn-secondary btn-sm banUser" data-id="{{ $user->id }}">
+                                                <i class="bi bi-unlock"></i>
+                                            </button>
+                                            @else
+                                            <button class="btn btn-warning btn-sm banUser" data-id="{{ $user->id }}">
+                                                <i class="bi bi-slash-circle"></i>
+                                            </button>
+                                            @endif
+
                                         </td>
                                     </tr>
                                     @empty
@@ -167,47 +177,47 @@
         @section('scripts')
         <script>
             $(function() {
-                    // Add User
-                    $('#addUserForm').on('submit', function(e) {
-                        e.preventDefault();
+                // Add User
+                $('#addUserForm').on('submit', function(e) {
+                    e.preventDefault();
 
-                        // Grab all fields
-                        let data = {
-                            _token: "{{ csrf_token() }}",
-                            first_name: $('input[name="first_name"]').val(),
-                            last_name: $('input[name="last_name"]').val(),
-                            email: $('input[name="email"]').val(),
-                            phone: $('input[name="phone"]').val(),
-                            password: $('input[name="password"]').val(),
-                            passcode: $('input[name="passcode"]').val(),
-                            role: $('select[name="role"]').val(),
-                            account_type_id: $('select[name="account_type_id"]').val(),
-                            currency_id: $('select[name="currency_id"]').val(),
-                        };
+                    // Grab all fields
+                    let data = {
+                        _token: "{{ csrf_token() }}",
+                        first_name: $('input[name="first_name"]').val(),
+                        last_name: $('input[name="last_name"]').val(),
+                        email: $('input[name="email"]').val(),
+                        phone: $('input[name="phone"]').val(),
+                        password: $('input[name="password"]').val(),
+                        passcode: $('input[name="passcode"]').val(),
+                        role: $('select[name="role"]').val(),
+                        account_type_id: $('select[name="account_type_id"]').val(),
+                        currency_id: $('select[name="currency_id"]').val(),
+                    };
 
-                        $.ajax({
-                            url: "{{ route('admin.user.store') }}",
-                            type: "POST",
-                            data: data,
-                            success: function(res) {
-                                iziToast.success({
-                                    title: 'Success',
-                                    message: res.message
-                                });
-                                $('#addUserModal').modal('hide');
-                                setTimeout(() => location.reload(), 1000);
-                            },
-                            error: function(xhr) {
-                                let msg = xhr.responseJSON?.message || 'Failed to add user';
-                                iziToast.error({
-                                    title: 'Error',
-                                    message: msg
-                                });
-                            }
-                        });
+                    $.ajax({
+                        url: "{{ route('admin.user.store') }}",
+                        type: "POST",
+                        data: data,
+                        success: function(res) {
+                            iziToast.success({
+                                title: 'Success',
+                                message: res.message
+                            });
+                            $('#addUserModal').modal('hide');
+                            setTimeout(() => location.reload(), 1000);
+                        },
+                        error: function(xhr) {
+                            let msg = xhr.responseJSON?.message || 'Failed to add user';
+                            iziToast.error({
+                                title: 'Error',
+                                message: msg
+                            });
+                        }
                     });
+                });
 
-                
+
 
 
 
@@ -265,6 +275,27 @@
                             }
                         });
                     }
+                });
+
+                $(document).on('click', '.banUser', function() {
+                    const id = $(this).data('id');
+
+                    $.post("{{ url('admin/user/ban') }}/" + id, {
+                        _token: "{{ csrf_token() }}"
+                    }, function(res) {
+                        if (res.success) {
+                            iziToast.warning({
+                                title: 'User Status Changed',
+                                message: res.message
+                            });
+                            setTimeout(() => location.reload(), 800);
+                        }
+                    }).fail(function(xhr) {
+                        iziToast.error({
+                            title: 'Error',
+                            message: xhr.responseJSON?.message || 'Something went wrong.'
+                        });
+                    });
                 });
 
             });

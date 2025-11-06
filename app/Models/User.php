@@ -30,6 +30,7 @@ class User extends Authenticatable
         'idback',
         'addressproof',
         'kyc_status',
+          'banned',
     ];
 
 

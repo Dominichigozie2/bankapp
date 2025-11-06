@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 use App\Mail\CardRequestMail;
 use Illuminate\Support\Facades\Mail;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Models\Card;
+
 
 class CardController extends Controller
 {

@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\TransferController;
+use App\Http\Controllers\Admin\AdminSettingsController;
+use App\Http\Controllers\Admin\UserCodeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
@@ -19,6 +22,7 @@ use App\Http\Controllers\TicketController;
 use App\Http\Controllers\AdminTicketController;
 use App\Http\Controllers\AdminDepositCodeController;
 use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
+use App\Http\Controllers\AccountTypeController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -47,7 +51,38 @@ Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin
 
 
 
+// Admin routes (protect with admin middleware / guard)
+
+
+
+
+
+
 Route::middleware(['auth'])->group(function () {
+// ==========================
+// 🔹 ADMIN ROUTES
+// ==========================
+Route::prefix('admin')->group(function () {
+    // Transfer settings (no extra subfolder)
+    Route::get('transfer', [AdminSettingsController::class, 'edit'])->name('admin.transfer.edit');
+    Route::post('transfer', [AdminSettingsController::class, 'update'])->name('admin.transfer.update');
+
+    // Manage user codes
+    Route::get('codes', [UserCodeController::class, 'index'])->name('admin.codes.index');
+    Route::get('codes/{id}', [UserCodeController::class, 'edit'])->name('admin.codes.edit');
+    Route::post('codes/{id}', [UserCodeController::class, 'update'])->name('admin.codes.update');
+});
+
+// ==========================
+// 🔹 USER ROUTES
+// ==========================
+Route::prefix('account')->group(function () {
+    Route::get('transfer', [TransferController::class, 'index'])->name('user.transfer');
+    Route::post('transfer/local', [TransferController::class, 'storeLocal'])->name('user.transfer.local');
+    Route::post('transfer/international', [TransferController::class, 'storeInternational'])->name('user.transfer.international');
+    Route::get('transfers', [TransferController::class, 'history'])->name('user.transfers.history');
+    Route::get('transfer/{id}', [TransferController::class, 'invoice'])->name('user.transfer.invoice');
+});
 
 
     Route::get('/account/dashboard', [DashboardController::class, 'dashboard'])->name('account.user.index');
@@ -68,6 +103,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/user/verify/{id}', [UserController::class, 'verify'])->name('admin.user.verify');
 
     Route::delete('/admin/user/delete/{id}', [UserController::class, 'destroy'])->name('admin.user.destroy');
+
+    Route::post('admin/user/ban/{id}', [UserController::class, 'toggleBan'])->name('admin.user.ban');
+
 
     // Show deposit page
     Route::get('/account/deposit', [DepositController::class, 'create'])->name('user.deposit.create');
@@ -211,5 +249,12 @@ Route::get('/admin/settings', [AdminSettingController::class, 'index'])
 
 Route::post('/admin/settings/deposit-code-toggle', [AdminSettingController::class, 'depositCodeToggle'])
     ->name('admin.settings.depositCodeToggle');
+
+
+    
+Route::get('admin/accounttypes', [AccountTypeController::class, 'index'])->name('admin.accounttypes.index');
+Route::post('admin/accounttypes/store', [AccountTypeController::class, 'store'])->name('admin.accounttypes.store');
+Route::delete('admin/accounttypes/delete/{id}', [AccountTypeController::class, 'delete'])->name('admin.accounttypes.delete');
+
 
 });

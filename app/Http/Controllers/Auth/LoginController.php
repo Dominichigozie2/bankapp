@@ -24,11 +24,20 @@ class LoginController extends Controller
 
         $user = User::where('email', $validated['email'])->first();
 
+        // ❌ Invalid credentials
         if (!$user || !Hash::check($validated['password'], $user->password)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid email or password.',
             ], 401);
+        }
+
+        // 🚫 Check if user is banned
+        if ($user->banned) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your account has been restricted. Please contact customer service for assistance.',
+            ], 403);
         }
 
         // ✅ If admin disabled passcode
@@ -71,6 +80,14 @@ class LoginController extends Controller
             ], 401);
         }
 
+        // 🚫 Block banned users even at passcode step
+        if ($user->banned) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your account has been restricted. Please contact customer service for assistance.',
+            ], 403);
+        }
+
         Auth::login($user);
 
         return response()->json([
@@ -88,6 +105,15 @@ class LoginController extends Controller
         ]);
 
         $user = User::where('email', $validated['email'])->firstOrFail();
+
+        // 🚫 Prevent banned users from setting a passcode
+        if ($user->banned) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your account has been restricted. Please contact customer service for assistance.',
+            ], 403);
+        }
+
         $user->passcode = $validated['passcode'];
         $user->save();
 

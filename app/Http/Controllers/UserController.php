@@ -101,4 +101,19 @@ class UserController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    public function toggleBan($id)
+    {
+        $user = User::findOrFail($id);
+        $user->banned = !$user->banned;
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => $user->banned
+                ? 'User has been banned successfully.'
+                : 'User has been unbanned successfully.',
+            'status' => $user->banned,
+        ]);
+    }
 }
