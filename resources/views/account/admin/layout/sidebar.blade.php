@@ -16,7 +16,7 @@
                         <span>Dashboard</span>
                     </a>
                 </li>
-                
+
                 <li class="mb-2">
                     <a
                         class="text-white text-decoration-none d-flex justify-content-between align-items-center"
@@ -36,7 +36,7 @@
                         <li><a href="/admin/depositcodes">Deposit Settings</a></li>
                     </ul>
                 </li>
-             
+
 
                 <li>
                     <a href="/admin/cards">
@@ -66,12 +66,33 @@
                     </a>
                 </li>
 
+                <li class="mb-2">
+                    <a
+                        class="text-white text-decoration-none d-flex justify-content-between align-items-center"
+                        data-bs-toggle="collapse"
+                        href="#SettingsSubmenu"
+                        role="button"
+                        aria-expanded="false"
+                        aria-controls="SettingsSubmenu">
+                        <span><i class='bx bx-slider'></i>
+                            Settings</span>
+                        <i class="bx bx-chevron-down"></i>
+                    </a>
+
+                    <!-- Submenu -->
+                    <ul class="collapse list-unstyled ps-4 mt-2" id="SettingsSubmenu">
+                        <li><a href="/admin/codes">Generate Transfer Code</a></li>
+                        <li><a href="/admin/transfer">Enable Transfers</a></li>
+                    </ul>
+                </li>
+
+
             </ul>
 
         </div>
-        
+
         <ul class="logout" style="margin-top: 2rem;">
-              <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                 @csrf
             </form>
 

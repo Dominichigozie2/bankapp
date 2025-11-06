@@ -5,14 +5,19 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\AdminSetting;
+use App\Models\Transfer; // ✅ Add this line
+
 
 class AdminSettingsController extends Controller
 {
-    public function edit()
-    {
-        $settings = AdminSetting::first();
-        return view('account.admin.transfer_settings', compact('settings'));
-    }
+   public function edit()
+{
+    $settings = AdminSetting::first();
+    $transfers = Transfer::with('user')->latest()->get(); // Load all transfers with user info
+
+    return view('account.admin.transfer_settings', compact('settings', 'transfers'));
+}
+
 
     public function update(Request $request)
     {

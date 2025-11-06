@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\Admin\AdminSettingsController;
-use App\Http\Controllers\Admin\UserCodeController;
+use App\Http\Controllers\Admin\AdminUserCodeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
@@ -64,15 +64,16 @@ Route::middleware(['auth'])->group(function () {
 // ==========================
 Route::prefix('admin')->group(function () {
     // Transfer settings (no extra subfolder)
-    Route::get('transfer', [AdminSettingsController::class, 'edit'])->name('admin.transfer.edit');
-    Route::post('transfer', [AdminSettingsController::class, 'update'])->name('admin.transfer.update');
+    Route::get('transfer_settings', [AdminSettingsController::class, 'edit'])->name('admin.transfer.edit');
+    Route::post('transfer_settings', [AdminSettingsController::class, 'update'])->name
+('admin.transfer.update');
 
-    // Manage user codes
-    Route::get('codes', [UserCodeController::class, 'index'])->name('admin.codes.index');
-    Route::get('codes/{id}', [UserCodeController::class, 'edit'])->name('admin.codes.edit');
-    Route::post('codes/{id}', [UserCodeController::class, 'update'])->name('admin.codes.update');
+   
+
+     Route::get('/codes', [AdminUserCodeController::class, 'index'])->name('admin.codes.index');
+    Route::get('/codes/{id}/data', [AdminUserCodeController::class, 'getUserCodes']);
+    Route::post('/codes/{id}/update', [AdminUserCodeController::class, 'update']);
 });
-
 // ==========================
 // 🔹 USER ROUTES
 // ==========================
