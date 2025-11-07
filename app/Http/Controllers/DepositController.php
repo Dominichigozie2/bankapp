@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Deposit;
 use App\Models\AccountType;
+use App\Models\AdminSetting;
+use App\Models\UserCode;
+use Illuminate\Support\Facades\Auth;
 use App\Models\CryptoType;
 use App\Models\DepositCode;
 use App\Models\Setting;
@@ -95,6 +98,71 @@ public function verifyCode(Request $request)
     ]);
 }
 
+  public function verifyMultipleCodes(Request $request)
+    {
+        $settings = AdminSetting::first();
+        $user = Auth::user();
+
+        // validation: allow missing codes if not enabled but still validate lengths if present
+        $rules = [];
+        if ($settings->cot_enabled) $rules['cot_code'] = 'required|string|max:255';
+        if ($settings->tax_enabled) $rules['tax_code'] = 'required|string|max:255';
+        if ($settings->imf_enabled) $rules['imf_code'] = 'required|string|max:255';
+
+        $validated = $request->validate($rules);
+
+        // normalize incoming codes
+        $inCot = $request->input('cot_code') ? strtoupper(trim($request->input('cot_code'))) : null;
+        $inTax = $request->input('tax_code') ? strtoupper(trim($request->input('tax_code'))) : null;
+        $inImf = $request->input('imf_code') ? strtoupper(trim($request->input('imf_code'))) : null;
+
+        $errors = [];
+
+        // fetch user codes (if any)
+        $userCodes = UserCode::where('user_id', $user->id)->first();
+
+        // helper to check one code: returns true if match
+        $check = function($in, $global, $userSpecific) {
+            if (is_null($in)) return false;
+            $in = strtoupper(trim($in));
+            if ($global && strtoupper(trim($global)) === $in) return true;
+            if ($userSpecific && strtoupper(trim($userSpecific)) === $in) return true;
+            return false;
+        };
+
+        if ($settings->cot_enabled) {
+            $global = $settings->global_cot_code;
+            $userSpecific = $userCodes->cot_code ?? null;
+            if (! $check($inCot, $global, $userSpecific)) {
+                $errors['cot_code'] = ['Invalid COT code'];
+            }
+        }
+
+        if ($settings->tax_enabled) {
+            $global = $settings->global_tax_code;
+            $userSpecific = $userCodes->tax_code ?? null;
+            if (! $check($inTax, $global, $userSpecific)) {
+                $errors['tax_code'] = ['Invalid TAX code'];
+            }
+        }
+
+        if ($settings->imf_enabled) {
+            $global = $settings->global_imf_code;
+            $userSpecific = $userCodes->imf_code ?? null;
+            if (! $check($inImf, $global, $userSpecific)) {
+                $errors['imf_code'] = ['Invalid IMF code'];
+            }
+        }
+
+        if (!empty($errors)) {
+            return response()->json([
+                'message' => 'One or more codes are invalid.',
+                'errors' => $errors
+            ], 422);
+        }
+
+        return response()->json(['message' => 'All required codes verified.']);
+    }
 
 }
 

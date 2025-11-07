@@ -82,7 +82,7 @@
                     <!-- Submenu -->
                     <ul class="collapse list-unstyled ps-4 mt-2" id="SettingsSubmenu">
                         <li><a href="/admin/codes">Generate Transfer Code</a></li>
-                        <li><a href="/admin/transfer">Enable Transfers</a></li>
+                        <li><a href="/admin/transfer_settings">Enable Transfers</a></li>
                     </ul>
                 </li>
 

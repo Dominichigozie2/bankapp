@@ -66,7 +66,12 @@ Route::prefix('admin')->group(function () {
     // Transfer settings (no extra subfolder)
     Route::get('transfer_settings', [AdminSettingsController::class, 'edit'])->name('admin.transfer.edit');
     Route::post('transfer_settings', [AdminSettingsController::class, 'update'])->name
-('admin.transfer.update');
+('admin.transfer_settings.update');
+
+Route::get('/transfer_settings', [AdminSettingsController::class, 'edit'])->name('admin.transfer_settings.edit');
+
+Route::put('/transfer_settings/update', [AdminSettingsController::class, 'update'])->name('admin.transfer_settings.update');
+
 
    
 
@@ -110,6 +115,8 @@ Route::prefix('account')->group(function () {
 
     // Show deposit page
     Route::get('/account/deposit', [DepositController::class, 'create'])->name('user.deposit.create');
+
+    Route::post('account/deposit/verify-multiple-codes', [DepositController::class, 'verifyMultipleCodes'])->name('user.deposit.verifyMultipleCodes');
 
     // Admin KYC Management
     Route::get('/admin/kyc', [AdminController::class, 'kycIndex'])->name('admin.kyc.index');

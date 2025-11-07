@@ -9,8 +9,23 @@ class AdminSetting extends Model
     protected $table = 'admin_settings';
 
     protected $fillable = [
-        'cot_enabled', 'tax_enabled', 'imf_enabled', 'transfers_enabled',
-        'service_charge', 'max_transfer_amount', 'transfer_success_message'
+        'cot_enabled',
+        'tax_enabled',
+        'imf_enabled',
+        'transfers_enabled',
+        'service_charge',
+        'max_transfer_amount',
+        'transfer_success_message',
+
+        // ✅ Newly added fields
+        'global_cot_code',
+        'global_tax_code',
+        'global_imf_code',
+        'cot_message',
+        'tax_message',
+        'imf_message',
+        'transfer_instruction',
+        'deposit_instruction',
     ];
 
     protected $casts = [
