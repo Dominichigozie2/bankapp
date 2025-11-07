@@ -7,15 +7,20 @@ use Illuminate\Support\Str;
 use App\Models\Transfer;
 use App\Models\AdminSetting;
 use App\Models\UserCode;
+use App\Models\UserAccount;
 use Illuminate\Support\Facades\Auth;
 
 class TransferController extends Controller
 {
-    // show transfer page (your existing Blade)
-    public function index()
+
+  public function index()
     {
-        $settings = AdminSetting::first();
-        return view('account.user.transfer', compact('settings'));
+        $user = Auth::user();
+
+    $userAccounts = UserAccount::where('user_id', $user->id)->get();
+    $settings = AdminSetting::first();
+
+    return view('account.user.transfer', compact('user', 'userAccounts', 'settings'));
     }
 
     // POST endpoint to start a local transfer (passcode required)
@@ -174,4 +179,66 @@ class TransferController extends Controller
         $transfer = Transfer::where('id', $id)->where('user_id', $user->id)->firstOrFail();
         return view('account.user.transfer_invoice', compact('transfer'));
     }
+
+ public function selfTransfer(Request $request)
+{
+    $user = Auth::user();
+
+    $request->validate([
+        'amount' => 'required|numeric|min:1',
+        'from_account' => 'required|different:to_account',
+        'to_account' => 'required',
+        'passcode' => 'required|min:6|max:6',
+    ]);
+
+    // ✅ Verify passcode
+    if ($request->passcode !== $user->passcode) {
+        return response()->json(['success' => false, 'message' => 'Incorrect account passcode']);
+    }
+
+    // ✅ Optional: check if balance is enough (if your accounts have balances)
+    $fromAccount = UserAccount::where('id', $request->from_account)
+        ->where('user_id', $user->id)
+        ->first();
+
+    if (!$fromAccount) {
+        return response()->json(['success' => false, 'message' => 'Invalid source account']);
+    }
+
+    if (isset($fromAccount->balance) && $fromAccount->balance < $request->amount) {
+        return response()->json(['success' => false, 'message' => 'Insufficient funds in source account']);
+    }
+
+    // ✅ Insert into transfers table
+    $transfer = Transfer::create([
+        'user_id' => $user->id,
+        'type' => 'self',
+        'amount' => $request->amount,
+        'bank_name' => 'Internal Transfer',
+        'account_name' => $user->name,
+        'account_number' => $fromAccount->account_number ?? 'SELF',
+        'details' => "Transfer from Account #{$request->from_account} to Account #{$request->to_account}",
+        'reference' => strtoupper(Str::random(10)),
+        'status' => 'pending',
+        'meta' => [
+            'from_account' => $request->from_account,
+            'to_account' => $request->to_account,
+        ],
+    ]);
+
+    // ✅ Optional: deduct balance immediately
+    // $fromAccount->decrement('balance', $request->amount);
+    // $toAccount->increment('balance', $request->amount);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Self transfer recorded successfully! Pending admin confirmation.',
+        'transfer_id' => $transfer->id,
+    ]);
+}
+protected $casts = [
+    'meta' => 'array',
+    'amount' => 'decimal:2',
+];
+
 }

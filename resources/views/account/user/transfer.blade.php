@@ -1,8 +1,3 @@
-@php
-    use App\Models\AdminSetting;
-    $settings = AdminSetting::first();
-@endphp
-
 @extends('account.user.layout.app')
 @section('content')
 
@@ -10,32 +5,13 @@
     .transfer-form {
         display: none;
     }
-
     .transfer-form.active {
         display: block;
         animation: fadeIn 0.4s ease-in-out;
     }
-
     @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 </style>
 
@@ -46,7 +22,7 @@
         <div class="modal-content shadow-lg border-0 rounded-3">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="instructionModalLabel">Important Notice</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 {!! $settings->tax_message ?? 'Please request for your transaction codes before proceeding with any transfer.' !!}
@@ -59,7 +35,6 @@
     </div>
 </div>
 @endif
-
 
 <div class="page-content">
     <div class="container mt-5">
@@ -76,6 +51,7 @@
                                 <option value="">-- Choose Transfer Type --</option>
                                 <option value="local">Local Transfer</option>
                                 <option value="international">International Transfer</option>
+                                <option value="self">Self Transfer</option>
                             </select>
                         </div>
 
@@ -85,33 +61,33 @@
                             <h5 class="mb-3">Local Transfer</h5>
 
                             <div class="mb-3">
-                                <label class="form-label">Amount (Total Balance: ${{ number_format(Auth::user()->balance ?? 0, 2) }})</label>
-                                <input type="number" class="form-control" name="amount" placeholder="Enter amount" required>
+                                <label class="form-label">Amount (Total Balance: ${{ number_format($user->balance ?? 0, 2) }})</label>
+                                <input type="number" class="form-control" name="amount" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">Payment Account</label>
-                                <input type="text" class="form-control" value="{{ Auth::user()->account_type->name ?? 'Savings' }}" readonly>
+                                <input type="text" class="form-control" value="{{ $user->account_type->name ?? 'Savings' }}" readonly>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">Bank Name</label>
-                                <input type="text" class="form-control" name="bank_name" placeholder="Enter bank name" required>
+                                <input type="text" class="form-control" name="bank_name" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">Account Number</label>
-                                <input type="text" class="form-control" name="account_number" placeholder="Enter account number" required>
+                                <input type="text" class="form-control" name="account_number" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">Account Name</label>
-                                <input type="text" class="form-control" name="account_name" placeholder="Enter account name" required>
+                                <input type="text" class="form-control" name="account_name" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">Details</label>
-                                <textarea class="form-control" name="details" placeholder="Enter transaction details" rows="3"></textarea>
+                                <textarea class="form-control" name="details" rows="3"></textarea>
                             </div>
 
                             <button type="submit" class="btn btn-primary w-100">Proceed Local Transfer</button>
@@ -123,116 +99,93 @@
                             <h5 class="mb-3">International Transfer</h5>
 
                             <div class="mb-3">
-                                <label class="form-label">Amount (Total Balance: ${{ number_format(Auth::user()->balance ?? 0, 2) }})</label>
-                                <input type="number" class="form-control" name="amount" placeholder="Enter amount" required>
+                                <label class="form-label">Amount (Total Balance: ${{ number_format($user->balance ?? 0, 2) }})</label>
+                                <input type="number" class="form-control" name="amount" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">Payment Account</label>
-                                <input type="text" class="form-control" value="{{ Auth::user()->account_type->name ?? 'Savings' }}" readonly>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Account Type</label>
-                                <select name="account_type" class="form-select" required>
-                                    <option value="">Choose Account Type</option>
-                                    <option value="savings">Savings Account</option>
-                                    <option value="current">Current Account</option>
-                                    <option value="business">Business Account</option>
-                                </select>
+                                <input type="text" class="form-control" value="{{ $user->account_type->name ?? 'Savings' }}" readonly>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">Bank Name</label>
-                                <input type="text" class="form-control" name="bank_name" placeholder="Enter bank name" required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Account Name</label>
-                                <input type="text" class="form-control" name="account_name" placeholder="Enter account name" required>
+                                <input type="text" class="form-control" name="bank_name" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">Account Number</label>
-                                <input type="text" class="form-control" name="account_number" placeholder="Enter account number" required>
+                                <input type="text" class="form-control" name="account_number" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">Bank Country</label>
-                                <input type="text" class="form-control" name="bank_country" placeholder="Enter bank country" required>
+                                <input type="text" class="form-control" name="bank_country" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">Routine Number</label>
-                                <input type="text" class="form-control" name="routine_number" placeholder="Enter routine number" required>
+                                <input type="text" class="form-control" name="routine_number" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">Bank Code</label>
-                                <input type="text" class="form-control" name="bank_code" placeholder="Enter bank code" required>
+                                <input type="text" class="form-control" name="bank_code" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">Details</label>
-                                <textarea class="form-control" name="details" placeholder="Enter transaction details" rows="3"></textarea>
+                                <textarea class="form-control" name="details" rows="3"></textarea>
                             </div>
 
                             <button type="submit" class="btn btn-primary w-100">Proceed International Transfer</button>
                         </form>
+
+                        <!-- SELF TRANSFER FORM -->
+                        <form id="selfTransferForm" class="transfer-form">
+                            @csrf
+                            <h5 class="mb-3">Self Transfer</h5>
+
+                            <div class="mb-3">
+                                <label class="form-label">Amount (Total Balance: ${{ number_format($user->balance ?? 0, 2) }})</label>
+                                <input type="number" class="form-control" name="amount" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">From Account</label>
+                                <select name="from_account" class="form-select" required>
+                                    <option value="">Select Source Account</option>
+                                    @foreach($userAccounts as $acct)
+                                        <option value="{{ $acct->id }}" {{ $acct->is_active ? 'selected' : '' }}>
+                                            {{ $acct->accountType->name }} {{ $acct->account_number ? '- '.$acct->account_number : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">To Account</label>
+                                <select name="to_account" class="form-select" required>
+                                    <option value="">Select Destination Account</option>
+                                    @foreach($userAccounts as $acct)
+                                        <option value="{{ $acct->id }}">
+                                            {{ $acct->accountType->name }} {{ $acct->account_number ? '- '.$acct->account_number : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                         
+                            <div class="mb-3">
+                                <label class="form-label">Account PIN (Passcode)</label>
+                                <input type="password" class="form-control" name="passcode" minlength="6" maxlength="6" required>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">Proceed Self Transfer</button>
+                        </form>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-
-<!-- CODE & PASSCODE MODALS -->
-<div class="modal fade" id="codesModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="codesForm">
-                <div class="modal-header">
-                    <h5 class="modal-title">Additional Verification</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="codesContainer"></div>
-                    <div class="mt-2">
-                        <small>If you don't have the required code(s), please create a ticket with support.</small>
-                        <div class="mt-2">
-                            <a href="report" class="btn btn-link">Request Code via Ticket</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Continue</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="passcodeModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="passcodeForm">
-                <div class="modal-header">
-                    <h5 class="modal-title">Enter Account Code (Passcode)</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label>Account Code</label>
-                        <input type="password" name="passcode" class="form-control" required minlength="6" maxlength="6" />
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Verify & Submit</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
@@ -242,94 +195,39 @@
 @section('scripts')
 <script>
     document.getElementById('transferType').addEventListener('change', function() {
-        const localForm = document.getElementById('localTransferForm');
-        const intlForm = document.getElementById('internationalTransferForm');
-        localForm.classList.toggle('active', this.value === 'local');
-        intlForm.classList.toggle('active', this.value === 'international');
+        const forms = ['localTransferForm', 'internationalTransferForm', 'selfTransferForm'];
+        forms.forEach(id => document.getElementById(id).classList.remove('active'));
+        if (this.value === 'local') document.getElementById('localTransferForm').classList.add('active');
+        if (this.value === 'international') document.getElementById('internationalTransferForm').classList.add('active');
+        if (this.value === 'self') document.getElementById('selfTransferForm').classList.add('active');
     });
 
     $(function() {
-        let transferPayload = {};
-        let transferType = null;
-
-        const settings = {
-            cot_enabled: {{ $settings->cot_enabled ? 'true' : 'false' }},
-            tax_enabled: {{ $settings->tax_enabled ? 'true' : 'false' }},
-            imf_enabled: {{ $settings->imf_enabled ? 'true' : 'false' }},
-            transfers_enabled: {{ $settings->transfers_enabled ? 'true' : 'false' }}
-        };
-
-        function openCodesModal() {
-            const container = $('#codesContainer');
-            container.empty();
-            if (settings.cot_enabled) container.append('<div class="mb-2"><label>COT Code</label><input type="text" name="cot_code" class="form-control" required></div>');
-            if (settings.tax_enabled) container.append('<div class="mb-2"><label>TAX Code</label><input type="text" name="tax_code" class="form-control" required></div>');
-            if (settings.imf_enabled) container.append('<div class="mb-2"><label>IMF Code</label><input type="text" name="imf_code" class="form-control" required></div>');
-            $('#codesModal').modal('show');
-        }
-
-        $('#localTransferForm').on('submit', function(e) {
+        // Self Transfer submit
+        $('#selfTransferForm').on('submit', function(e) {
             e.preventDefault();
-            transferType = 'local';
-            transferPayload = $(this).serializeArray().reduce((o, i) => (o[i.name] = i.value, o), {});
-            $('#passcodeModal').modal('show');
-        });
-
-        $('#internationalTransferForm').on('submit', function(e) {
-            e.preventDefault();
-            transferType = 'international';
-            transferPayload = $(this).serializeArray().reduce((o, i) => (o[i.name] = i.value, o), {});
-            if (!settings.transfers_enabled) {
-                iziToast.error({ title: 'Restricted', message: 'Transfers are disabled. Contact support.' });
-                return;
-            }
-            if (settings.cot_enabled || settings.tax_enabled || settings.imf_enabled) {
-                openCodesModal();
-            } else {
-                $('#passcodeModal').modal('show');
-            }
-        });
-
-        $('#codesForm').on('submit', function(e) {
-            e.preventDefault();
-            const codes = $(this).serializeArray().reduce((o, i) => (o[i.name] = i.value, o), {});
-            transferPayload = { ...transferPayload, ...codes };
-            $('#codesModal').modal('hide');
-            setTimeout(() => $('#passcodeModal').modal('show'), 250);
-        });
-
-        $('#passcodeForm').on('submit', function(e) {
-            e.preventDefault();
-            const passcode = $(this).find('[name="passcode"]').val();
-            transferPayload = { ...transferPayload, passcode };
-
-            const url = (transferType === 'local')
-                ? "{{ route('user.transfer.local') }}"
-                : "{{ route('user.transfer.international') }}";
-
+            const data = $(this).serialize();
             $.ajax({
-                url,
+                url: "{{ route('user.transfer.self') }}",
                 type: 'POST',
-                data: { ...transferPayload, _token: "{{ csrf_token() }}" },
+                data: data + "&_token={{ csrf_token() }}",
                 success(res) {
                     if (res.success) {
                         iziToast.success({ title: 'Success', message: res.message });
-                        $('#passcodeModal').modal('hide');
-                        setTimeout(() => res.redirect ? window.location.href = res.redirect : location.reload(), 1000);
+                        setTimeout(() => location.reload(), 1200);
                     } else {
                         iziToast.error({ title: 'Error', message: res.message || 'Transfer failed' });
                     }
                 },
                 error(xhr) {
-                    iziToast.error({ title: 'Error', message: xhr.responseJSON?.message || 'Error occurred' });
+                    iziToast.error({ title: 'Error', message: xhr.responseJSON?.message || 'Something went wrong' });
                 }
             });
         });
 
-        // Show instruction modal on page load
+        // Show instruction modal
         @if($settings && ($settings->cot_enabled || $settings->tax_enabled || $settings->imf_enabled))
-        var modal = new bootstrap.Modal(document.getElementById('instructionModal'));
-        modal.show();
+        new bootstrap.Modal(document.getElementById('instructionModal')).show();
         @endif
     });
 </script>

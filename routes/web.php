@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\Admin\AdminSettingsController;
+use App\Http\Controllers\Admin\AdminTransferController;
 use App\Http\Controllers\Admin\AdminUserCodeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
@@ -88,7 +89,14 @@ Route::prefix('account')->group(function () {
     Route::post('transfer/international', [TransferController::class, 'storeInternational'])->name('user.transfer.international');
     Route::get('transfers', [TransferController::class, 'history'])->name('user.transfers.history');
     Route::get('transfer/{id}', [TransferController::class, 'invoice'])->name('user.transfer.invoice');
+    Route::post('/transfer/self', [TransferController::class, 'selfTransfer'])->name('user.transfer.self');
 });
+
+
+Route::get('/admin/transfers', [AdminTransferController::class, 'index'])->name('admin.transfer.index');
+    Route::post('/admin/transfers/{id}/approve', [AdminTransferController::class, 'approve'])->name('/admin/transfer.approve');
+    Route::post('admin.transfers/{id}/reject', [AdminTransferController::class, 'reject'])->name('admin.transfer.reject');
+
 
 
     Route::get('/account/dashboard', [DashboardController::class, 'dashboard'])->name('account.user.index');
@@ -160,15 +168,6 @@ Route::prefix('account')->group(function () {
     Route::post('/admin/cards/approve/{id}', [AdminCardController::class, 'approve'])->name('admin.cards.approve');
     Route::post('/admin/cards/hold/{id}', [AdminCardController::class, 'hold'])->name('admin.cards.hold');
     Route::post('/admin/cards/reject/{id}', [AdminCardController::class, 'reject'])->name('admin.cards.reject');
-
-
-    Route::get('/account/transfer', function () {
-        return view('account.user.transfer');
-    })->name('user.transfer');
-
-    // Route::get('/account/loanhistory', function () {
-    //     return view('account.user.loanhistory');
-    // })->name('user.loanhistory');
 
 
     Route::get('/account/loans', [LoanController::class, 'index'])->name('user.loan');
