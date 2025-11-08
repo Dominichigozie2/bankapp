@@ -25,6 +25,11 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.3.96/css/materialdesignicons.min.css">
 
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
     <!-- swiper css -->
     <link rel="stylesheet" href="{{asset("assets/libs/swiper/swiper-bundle.min.css")}}">
     <link rel="stylesheet" href="{{asset("assets/libs/swiper/swiper-bundle.min.css")}}">
@@ -36,87 +41,32 @@
     <!-- App Css-->
     <link href="{{asset("assets/css/app.min.css")}}" id="app-style" rel="stylesheet" type="text/css" />
 
+    <link href="{{asset("assets/css/custom.css")}}" rel="stylesheet" type="text/css" />
+
     <!-- Boxicons CDN -->
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 
 
 </head>
 
-<style>
-    .page-topbar {
-        z-index: 1000;
-        position: sticky;
-        top: 0;
-    }
 
-    .vertical-menu {
-        background-color: #371950ff;
-        position: stickyt;
-        top: 0;
-        flex-direction: column;
-        display: flex;
-        justify-content: center;
-        flex-shrink: 0;
-        z-index: 10;
-    }
+<body>
 
-    .main-content {
-        padding: 20px;
-        background: #f8f9fc;
-    }
+    {{-- Sidebar --}}
+    @include('account.user.layout.sidebar')
 
-    .sidelist {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
+    {{-- Header --}}
+    @include('account.user.layout.header')
 
-        li {
-            width: 100%;
+    <div class="main-content" id="mainContent">
+        <div class="container-fluid">
 
-            a {
-                display: flex;
-                gap: 1rem;
-                align-items: center;
-                font-size: 12px;
-                color: #e9e9e9ff !important;
 
-                span {
-                    display: flex;
-                    align-items: center;
-                    gap: 1rem;
-                }
+            {{-- Main Content --}}
+            @yield('content')
 
-                &:hover {
-                    color: #9222e7ff !important;
-                }
-            }
 
-            & .active {
-                color: #9222e7ff !important;
-            }
-        }
-    }
-</style>
-
-<body data-layout="vertical">
-    <div id="layout-wrapper">
-        {{-- Header --}}
-        <div id="layout-wrapper">
-
-            {{-- Header --}}
-            @include('account.user.layout.header')
-
-            <div class="d-flex">
-                {{-- Sidebar --}}
-                @include('account.user.layout.sidebar')
-
-                {{-- Main Content --}}
-                <div class="main-content flex-grow-1">
-                    @yield('content')
-                    @include('account.user.layout.footer')
-                </div>
-            </div>
-
+            @include('account.user.layout.footer')
         </div>
 
     </div>
@@ -127,7 +77,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/izitoast/dist/js/iziToast.min.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <!-- JAVASCRIPT -->
+    <script src="{{asset('assets/js/custom.js')}}"></script>
+
     <script src="{{asset("assets/libs/bootstrap/js/bootstrap.bundle.min.js")}}"></script>
     <script src="{{asset("assets/libs/metismenujs/metismenujs.min.js")}}"></script>
     <script src="{{asset("assets/libs/simplebar/simplebar.min.js")}}"></script>
@@ -145,58 +99,70 @@
 
     <script src="{{asset("assets/js/pages/dashboard.init.js")}}"></script>
 
-    <!-- <script src="{{asset("assets/js/app.js")}}"></script> -->
-
     <script>
-        document.getElementById('toggleSidebar').addEventListener('click', function() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('main-content');
-            const body = document.querySelector('body'); // No need for id
+        document.getElementById('closeSidebar').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        });
 
-            sidebar.classList.toggle('collapsed');
 
-            if (sidebar.classList.contains('collapsed')) {
-                sidebar.style.marginLeft = "-250px";
-                mainContent.style.marginLeft = "0";
-                body.setAttribute('data-layout', 'horizontal');
 
+        const sidebar = document.getElementById('sidebar');
+        const menuIcon = document.getElementById('menuIcon');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const notifBadge = document.getElementById('notifBadge');
+        const markAllReadBtn = document.getElementById('markAllReadBtn');
+
+        menuIcon.addEventListener('click', () => {
+            if (window.innerWidth <= 992) {
+                sidebar.classList.toggle('active');
             } else {
-                sidebar.style.marginLeft = "0";
-                mainContent.style.marginLeft = "250px";
-                body.setAttribute('data-layout', 'horizontal');
+                sidebar.classList.toggle('collapsed');
             }
         });
 
-        document.addEventListener("DOMContentLoaded", function() {
-            const currentPath = window.location.pathname;
-            const menuLinks = document.querySelectorAll("#side-menu a");
+        closeSidebar.addEventListener('click', () => {
+            if (window.innerWidth <= 992) {
+                sidebar.classList.remove('active');
+            } else {
+                sidebar.classList.toggle('collapsed');
+            }
+        });
 
-            menuLinks.forEach(link => {
-                const linkPath = link.getAttribute("href");
+        // Search: submit handler (example)
+        document.getElementById('adminSearchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const q = document.getElementById('adminSearchInput').value.trim();
+            if (!q) return;
+            // Replace this with actual search route or AJAX call
+            alert('Search for: ' + q);
+        });
 
-                // If link matches current page URL
-                if (linkPath === currentPath) {
-                    link.classList.add("active");
+        // Notifications: Mark all read (client-side example)
+        markAllReadBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Example behavior: hide badge and disable button.
+            notifBadge.style.display = 'none';
+            markAllReadBtn.textContent = 'All read';
+            markAllReadBtn.disabled = true;
 
-                    // If link is inside a submenu, expand its parent
-                    const submenu = link.closest(".collapse");
-                    if (submenu) {
-                        submenu.classList.add("show"); // open submenu
-                        const parentToggle = document.querySelector(
-                            `[href="#${submenu.id}"]`
-                        );
-                        if (parentToggle) parentToggle.classList.add("active");
-                    }
-                } else {
-                    link.classList.remove("active");
+            // TODO: Call server endpoint to mark notifications read
+            // fetch('/admin/notifications/mark-read', { method: 'POST', headers: {...}, body: ... })
+        });
+
+        // Close mobile sidebar when clicking outside (optional)
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 992) {
+                if (!sidebar.contains(e.target) && !document.getElementById('topNav').contains(e.target)) {
+                    sidebar.classList.remove('active');
                 }
-            });
+            }
         });
     </script>
+
+    @yield('scripts')
 
 
 </body>
 
-@yield('scripts')
 
 </html>

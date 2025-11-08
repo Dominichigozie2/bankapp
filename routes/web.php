@@ -84,13 +84,15 @@ Route::put('/transfer_settings/update', [AdminSettingsController::class, 'update
 // 🔹 USER ROUTES
 // ==========================
 Route::prefix('account')->group(function () {
-    Route::get('transfer', [TransferController::class, 'index'])->name('user.transfer');
-    Route::post('transfer/local', [TransferController::class, 'storeLocal'])->name('user.transfer.local');
-    Route::post('transfer/international', [TransferController::class, 'storeInternational'])->name('user.transfer.international');
-    Route::get('transfers', [TransferController::class, 'history'])->name('user.transfers.history');
-    Route::get('transfer/{id}', [TransferController::class, 'invoice'])->name('user.transfer.invoice');
-    Route::post('/transfer/self', [TransferController::class, 'selfTransfer'])->name('user.transfer.self');
+    Route::get('transfer', [TransferController::class,'index'])->name('user.transfer');
+    Route::post('transfer/local', [TransferController::class,'storeLocal'])->name('user.transfer.local');
+    Route::post('transfer/international', [TransferController::class,'storeInternational'])->name('user.transfer.international');
+    Route::post('transfer/self', [TransferController::class,'selfTransfer'])->name('user.transfer.self');
+    Route::post('verify-codes', [TransferController::class,'verifyCodes'])->name('user.verify.codes');
+    Route::get('transfers', [TransferController::class,'history'])->name('user.transfers.history');
+    Route::get('transfer/{id}', [TransferController::class,'invoice'])->name('user.transfer.invoice');
 });
+
 
 
 Route::get('/admin/transfers', [AdminTransferController::class, 'index'])->name('admin.transfer.index');
@@ -211,6 +213,10 @@ Route::get('/admin/transfers', [AdminTransferController::class, 'index'])->name(
     Route::get('/account/report', function () {
         return view('account.user.report');
     })->name('user.kyc');
+
+    Route::get('/account/demo', function () {
+        return view('account.user.demo');
+    })->name('user.demo');
 
 
 

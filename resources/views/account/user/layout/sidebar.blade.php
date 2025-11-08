@@ -1,115 +1,49 @@
-<div class="vertical-menu" style="transition: all 0.3s;" id="sidebar">
-    <div data-simplebar class="h-100">
-<div class="logo" style="width: 100px;padding: 1rem; gap: 1rem; align-items: center; display: flex;">
-            <img src="/assets/images/logo-sm.svg" style="width: 70px;" alt="">
-            <h4>Logo</h4>
-        </div>
-        <!--- Sidebar Menu -->
-        <div id="sidebar-menu" class="mm-active" style="margin-top: 8rem;">
-            <ul class="metismenu list-unstyled sidelist" id="side-menu">
-                <li class="menu-title">Main</li>
+<div class="sidebar d-flex flex-column" id="sidebar">
+  <div class="logo d-flex justify-content-between align-items-center px-3 py-2">
+    <h5 class="m-0">AdminPanel</h5>
+    <button class="btn-close btn-close-white" id="closeSidebar"></button>
+  </div>
 
-                <li>
-                    <a href="/account/dashboard" class="waves-effect active waves-light">
-                        <i class="bx bx-grid"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
+  <ul class="nav flex-column">
+    <li class="nav-item">
+      <a href="/account/dashboard" class="nav-link active text-white"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a>
+    </li>
 
-                <li>
-                    <a href="/account/transfer">
-                        <i class="bx bx-send"></i>
-                        <span>Transfers</span>
-                    </a>
-                </li>
+    <li class="nav-item">
+      <a href="/account/deposit" class="nav-link text-white"><i class="bi bi-wallet2 me-2"></i> Deposits</a>
+    </li>
 
-                <li>
-                    <a href="/account/deposit">
-                        <i class="bx bx-wallet"></i>
-                        <span>Deposits</span>
-                    </a>
-                </li>
+    <li class="nav-item">
+      <a href="/account/transfer" class="nav-link text-white"><i class="bi bi-arrow-left-right me-2"></i> Transfers</a>
+    </li>
 
-                <li class="mb-2">
-                    <a
-                        class="text-white text-decoration-none d-flex justify-content-between align-items-center"
-                        data-bs-toggle="collapse"
-                        href="#transferSubmenu"
-                        role="button"
-                        aria-expanded="false"
-                        aria-controls="transferSubmenu">
-                        <span>
+    <!-- Bootstrap dropdown -->
+    <!-- <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle text-white" href="#" data-bs-toggle="dropdown">
+        <i class="bi bi-gear me-2"></i> Settings
+      </a>
+      <ul class="dropdown-menu bg-dark border-0">
+        <li><a class="dropdown-item text-light" href="#"><i class="bi bi-person me-2"></i> Profile</a></li>
+        <li><a class="dropdown-item text-light" href="#"><i class="bi bi-shield-lock me-2"></i> Security</a></li>
+        <li><a class="dropdown-item text-light" href="#"><i class="bi bi-bell me-2"></i> Notifications</a></li>
+      </ul>
+    </li>
 
-                            <i class="bx bx-arrow-to-bottom"></i>
-                            Loan</span>
-                        <i class="bx bx-chevron-down"></i>
-                    </a>
+    <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle text-white" href="#" data-bs-toggle="dropdown">
+        <i class="bi bi-bank me-2"></i> Banking
+      </a>
+      <ul class="dropdown-menu bg-dark border-0">
+        <li><a class="dropdown-item text-light" href="#"><i class="bi bi-cash me-2"></i> Loans</a></li>
+        <li><a class="dropdown-item text-light" href="#"><i class="bi bi-credit-card me-2"></i> Cards</a></li>
+        <li><a class="dropdown-item text-light" href="#"><i class="bi bi-building me-2"></i> Branches</a></li>
+      </ul>
+    </li> -->
+  </ul>
 
-                    <!-- Submenu -->
-                    <ul class="collapse list-unstyled ps-4 mt-2" id="transferSubmenu">
-                        <li><a href="/account/loans" class="text-white-50 text-decoration-none d-block py-2">Loan</a></li>
-                        <li><a href="/account/loanhistory" class="text-white-50 text-decoration-none d-block py-2">Loan History</a></li>
-                    </ul>
-                </li>
-
-                <li>
-                    <a href="/account/cards">
-                        <i class="bx bx-card"></i>
-                        <span>Card</span>
-                    </a>
-                </li>
-
-                <li class="mb-2">
-                    <a
-                        class="text-white text-decoration-none d-flex justify-content-between align-items-center"
-                        data-bs-toggle="collapse"
-                        href="#ReportSubmenu"
-                        role="button"
-                        aria-expanded="false"
-                        aria-controls="ReportSubmenu">
-                        <span><i class='bx bx-headphone'></i>
-                            Report</span>
-                        <i class="bx bx-chevron-down"></i>
-                    </a>
-
-                    <!-- Submenu -->
-                    <ul class="collapse list-unstyled ps-4 mt-2" id="ReportSubmenu">
-                        <li><a href="/account/report" class="text-white-50 text-decoration-none d-block py-2">Send Report</a></li>
-                        <li><a href="/account/tickethistory" class="text-white-50 text-decoration-none d-block py-2">Reports</a></li>
-                    </ul>
-                </li>
-                
-                <li class="mb-2">
-                    <a
-                        class="text-white text-decoration-none d-flex justify-content-between align-items-center"
-                        data-bs-toggle="collapse"
-                        href="#profileSubmenu"
-                        role="button"
-                        aria-expanded="false"
-                        aria-controls="profileSubmenu">
-                        <span><i class="bx bx-user"></i>
-                            My Account</span>
-                        <i class="bx bx-chevron-down"></i>
-                    </a>
-
-                    <!-- Submenu -->
-                    <ul class="collapse list-unstyled ps-4 mt-2" id="profileSubmenu">
-                        <li><a href="/account/profile" class="text-white-50 text-decoration-none d-block py-2">Profile</a></li>
-                        <li><a href="/account/kyc" class="text-white-50 text-decoration-none d-block py-2">KYC</a></li>
-                    </ul>
-                </li>
-
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                    @csrf
-                </form>
-
-                <li>
-                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                        Logout
-                    </a>
-                </li>
-            </ul>
-        </div>
-        <!-- Sidebar -->
-    </div>
+  <div class="logout px-3 py-2 mt-auto border-top border-secondary">
+    <a href="#" class="nav-link text-white">
+      <i class="bi bi-box-arrow-right me-2"></i> Logout
+    </a>
+  </div>
 </div>

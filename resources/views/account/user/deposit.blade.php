@@ -116,6 +116,7 @@ $settings = AdminSetting::first();
                 </div>
                 @endif
 
+
                 @if($settings->tax_enabled)
                 <div class="mb-3">
                     <label>TAX Code</label>
@@ -137,6 +138,7 @@ $settings = AdminSetting::first();
         </div>
     </div>
 </div>
+
 
 @endsection
 
