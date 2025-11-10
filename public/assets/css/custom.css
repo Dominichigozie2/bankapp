@@ -42,7 +42,9 @@ body {
     flex-direction: column;
 }
 
-
+table{
+    overflow-x: auto !important;
+}
 
 .sidebar .logo {
     display: flex;
