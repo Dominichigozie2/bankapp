@@ -1,173 +1,89 @@
-<header id="page-topbar">
-    <div class="navbar-header">
-        <div class="d-flex">
-            <!-- LOGO -->
-            <div class="navbar-brand-box">
-                <a href="index.html" class="logo logo-dark">
-                    <span class="logo-sm">
-                        <img src="{{asset("assets/images/logo-sm.svg")}}" alt="" height="26">
-                    </span>
-                    <span class="logo-lg">
-                        <img src="{{asset("assets/images/logo-sm.svg")}}" alt="" height="26"> <span class="logo-txt">Vuesy</span>
-                    </span>
-                </a>
+<!-- Top Nav -->
+<div class="top-nav" id="topNav">
+    <div class="d-flex align-items-center gap-3">
+        <span class="menu-icon" id="menuIcon" title="Toggle menu">&#9776;</span>
 
-                <a href="index.html" class="logo logo-light">
-                    <span class="logo-sm">
-                        <img src="{{asset("assets/images/logo-sm.svg")}}" alt="" height="26">
-                    </span>
-                    <span class="logo-lg">
-                        <img src="{{asset("assets/images/logo-sm.svg")}}" alt="" height="26"> <span class="logo-txt">Vuesy</span>
-                    </span>
-                </a>
-            </div>
-
-            <button type="button" class="btn btn-sm px-3 font-size-16 d-lg-none header-item" data-bs-toggle="collapse" id="horimenu-btn" data-bs-target="#topnav-menu-content">
-                <i class="fa fa-fw fa-bars"></i>
-            </button>
-
-        </div>
-
-        <div class="d-flex">
-            <div class="dropdown d-inline-block">
-                <button type="button" class="btn header-item noti-icon"
-                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="bx bx-search icon-sm"></i>
-                </button>
-                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0">
-                    <form class="p-2">
-                        <div class="search-box">
-                            <div class="position-relative">
-                                <input type="text" class="form-control rounded bg-light border-0" placeholder="Search...">
-                                <i class="bx bx-search search-icon"></i>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-
-
-            <div class="dropdown d-inline-block">
-                <button type="button" class="btn header-item noti-icon" id="page-header-notifications-dropdown"
-                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="bx bx-bell icon-sm"></i>
-                    <span class="noti-dot bg-danger rounded-pill">3</span>
-                </button>
-                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0"
-                    aria-labelledby="page-header-notifications-dropdown">
-                    <div class="p-3">
-                        <div class="row align-items-center">
-                            <div class="col">
-                                <h5 class="m-0 font-size-15"> Notifications </h5>
-                            </div>
-                            <div class="col-auto">
-                                <a href="javascript:void(0);" class="small"> Mark all as read</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div data-simplebar style="max-height: 250px;">
-                        <h6 class="dropdown-header bg-light">New</h6>
-                        <a href="#" class="text-reset notification-item">
-                            <div class="d-flex border-bottom align-items-start">
-                                <div class="flex-shrink-0">
-                                    <img src="assets/images/users/avatar-3.jpg"
-                                        class="me-3 rounded-circle avatar-sm" alt="user-pic">
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">Justin Verduzco</h6>
-                                    <div class="text-muted">
-                                        <p class="mb-1 font-size-13">Your task changed an issue from "In Progress" to <span class="badgebg-success-subtle text-success">Review</span></p>
-                                        <p class="mb-0 font-size-10 text-uppercase fw-bold"><i class="mdi mdi-clock-outline"></i> 1 hours ago</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                        <a href="#" class="text-reset notification-item">
-                            <div class="d-flex border-bottom align-items-start">
-                                <div class="flex-shrink-0">
-                                    <div class="avatar-sm me-3">
-                                        <span class="avatar-title bg-primary rounded-circle font-size-16">
-                                            <i class="uil-shopping-basket"></i>
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">New order has been placed</h6>
-                                    <div class="text-muted">
-                                        <p class="mb-1 font-size-13">Open the order confirmation or shipment confirmation.</p>
-                                        <p class="mb-0 font-size-10 text-uppercase fw-bold"><i class="mdi mdi-clock-outline"></i> 5 hours ago</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                        <h6 class="dropdown-header bg-light">Earlier</h6>
-                        <a href="#" class="text-reset notification-item">
-                            <div class="d-flex border-bottom align-items-start">
-                                <div class="flex-shrink-0">
-                                    <div class="avatar-sm me-3">
-                                        <span class="avatar-title bg-success-subtle text-success rounded-circle font-size-16">
-                                            <i class="uil-truck"></i>
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">Your item is shipped</h6>
-                                    <div class="text-muted">
-                                        <p class="mb-1 font-size-13">Here is somthing that you might light like to know.</p>
-                                        <p class="mb-0 font-size-10 text-uppercase fw-bold"><i class="mdi mdi-clock-outline"></i> 1 day ago</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-
-                        <a href="#" class="text-reset notification-item">
-                            <div class="d-flex border-bottom align-items-start">
-                                <div class="flex-shrink-0">
-                                    <img src="assets/images/users/avatar-4.jpg"
-                                        class="me-3 rounded-circle avatar-sm" alt="user-pic">
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">Salena Layfield</h6>
-                                    <div class="text-muted">
-                                        <p class="mb-1 font-size-13">Yay ! Everything worked!</p>
-                                        <p class="mb-0 font-size-10 text-uppercase fw-bold"><i class="mdi mdi-clock-outline"></i> 3 days ago</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="p-2 border-top d-grid">
-                        <a class="btn btn-sm btn-link font-size-14 btn-block text-center" href="javascript:void(0)">
-                            <i class="uil-arrow-circle-right me-1"></i> <span>View More..</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="dropdown d-inline-block">
-                <button type="button" class="btn header-item user text-start d-flex align-items-center" id="page-header-user-dropdown"
-                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <img class="rounded-circle header-profile-user" src="{{asset("assets/images/users/avatar-3.jpg")}}"
-                        alt="Header Avatar">
-                    <span class="ms-2 d-none d-xl-inline-block user-item-desc">
-                        <span class="user-name">Marie N. <i class="mdi mdi-chevron-down"></i></span>
-                    </span>
-                </button>
-                <div class="dropdown-menu dropdown-menu-end pt-0">
-                    <h6 class="dropdown-header">Welcome Marie N!</h6>
-                    <a class="dropdown-item" href="pages-profile.html"><i class="mdi mdi-account-circle text-muted font-size-16 align-middle me-1"></i> <span class="align-middle">Profile</span></a>
-                    <a class="dropdown-item" href="apps-chat.html"><i class="mdi mdi-message-text-outline text-muted font-size-16 align-middle me-1"></i> <span class="align-middle">Messages</span></a>
-                    <a class="dropdown-item" href="apps-kanban-board.html"><i class="mdi mdi-calendar-check-outline text-muted font-size-16 align-middle me-1"></i> <span class="align-middle">Taskboard</span></a>
-                    <a class="dropdown-item" href="pages-faqs.html"><i class="mdi mdi-lifebuoy text-muted font-size-16 align-middle me-1"></i> <span class="align-middle">Help</span></a>
-                    <div class="dropdown-divider"></div>
-                   
-                    <a class="dropdown-item" href="auth-signout-cover.html"><i class="mdi mdi-logout text-muted font-size-16 align-middle me-1"></i> <span class="align-middle">Logout</span></a>
-                </div>
-            </div>
-        </div>
+        <!-- SEARCH: visible on md+ screens -->
+        
     </div>
-</header>
 
-<div class="hori-overlay"></div>
+    <div class="d-flex align-items-center gap-2">
+
+    <div class="search-wrapper d-none d-md-block">
+            <form id="adminSearchForm" class="d-flex">
+                <input id="adminSearchInput" class="form-control form-control-sm me-2" type="search" placeholder="Search users, transfers, deposits..." aria-label="Search">
+                <button class="btn btn-outline-secondary btn-sm" type="submit"><i class="bi bi-search"></i></button>
+            </form>
+        </div>
+
+        <!-- NOTIFICATIONS -->
+       <div class="dropdwn me-2">
+    <button class="btn btn-light position-relative" id="notifDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-bell"></i>
+        <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width:320px;">
+        <li class="dropdown-header d-flex justify-content-between align-items-center">
+            <span>Notifications</span>
+            <button class="btn btn-link btn-sm" id="markAllReadBtn">Mark all read</button>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+
+        <!-- sample items -->
+        <li>
+            <a class="dropdown-item d-flex align-items-start" href="#">
+                <div class="flex-shrink-0 me-2"><i class="bi bi-wallet2 fs-4 text-primary"></i></div>
+                <div class="flex-grow-1">
+                    <div class="small text-muted">Deposits</div>
+                    <div>New deposit awaiting approval — #DEP-1023</div>
+                    <div class="small text-muted">2m ago</div>
+                </div>
+            </a>
+        </li>
+
+        <li>
+            <a class="dropdown-item d-flex align-items-start" href="#">
+                <div class="flex-shrink-0 me-2"><i class="bi bi-person-check fs-4 text-success"></i></div>
+                <div class="flex-grow-1">
+                    <div class="small text-muted">KYC</div>
+                    <div>User John Doe submitted KYC</div>
+                    <div class="small text-muted">1h ago</div>
+                </div>
+            </a>
+        </li>
+
+        <li>
+            <a class="dropdown-item d-flex align-items-start" href="#">
+                <div class="flex-shrink-0 me-2"><i class="bi bi-exclamation-triangle fs-4 text-warning"></i></div>
+                <div class="flex-grow-1">
+                    <div class="small text-muted">System</div>
+                    <div>Scheduled maintenance at 02:00 UTC</div>
+                    <div class="small text-muted">6h ago</div>
+                </div>
+            </a>
+        </li>
+
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-center" href="#">View all notifications</a></li>
+    </ul>
+</div>
+
+<!-- Profile dropdown -->
+<div class="dropdwn">
+    <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        <img src="{{asset("assets/images/users/avatar-3.jpg")}}" alt="Admin" class="rounded-circle me-2" width="40" height="40">
+        <div class="d-none d-md-block">
+            <strong>Admin</strong>
+            <div class="small text-muted">admin@example.com</div>
+        </div>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item" href="#">Profile</a></li>
+        <li><a class="dropdown-item" href="#">Settings</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-danger" href="#">Logout</a></li>
+    </ul>
+</div>
+
+    </div>
+</div>

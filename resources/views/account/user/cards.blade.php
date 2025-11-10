@@ -220,7 +220,7 @@
       });
   });
 
-  @if($card && $card - > card_status == 1)
+  @if($card && $card->card_status == 1)
   // Copy card details
       $('#copyCardBtn').click(function() {
         const details = `

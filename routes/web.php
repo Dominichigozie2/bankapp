@@ -22,6 +22,8 @@ use App\Http\Controllers\AdminLoanController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\AdminTicketController;
 use App\Http\Controllers\AdminDepositCodeController;
+use App\Http\Controllers\AdminProfileController;
+use App\Http\Controllers\Admin\CryptoTypeController;
 use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 use App\Http\Controllers\AccountTypeController;
 
@@ -60,44 +62,49 @@ Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin
 
 
 Route::middleware(['auth'])->group(function () {
-// ==========================
-// 🔹 ADMIN ROUTES
-// ==========================
-Route::prefix('admin')->group(function () {
-    // Transfer settings (no extra subfolder)
-    Route::get('transfer_settings', [AdminSettingsController::class, 'edit'])->name('admin.transfer.edit');
-    Route::post('transfer_settings', [AdminSettingsController::class, 'update'])->name
-('admin.transfer_settings.update');
+    // ==========================
+    // 🔹 ADMIN ROUTES
+    // ==========================
+    Route::prefix('admin')->group(function () {
+        // Transfer settings (no extra subfolder)
+        Route::get('transfer_settings', [AdminSettingsController::class, 'edit'])->name('admin.transfer.edit');
+        Route::post('transfer_settings', [AdminSettingsController::class, 'update'])->name('admin.transfer_settings.update');
 
-Route::get('/transfer_settings', [AdminSettingsController::class, 'edit'])->name('admin.transfer_settings.edit');
+        Route::get('/transfer_settings', [AdminSettingsController::class, 'edit'])->name('admin.transfer_settings.edit');
 
-Route::put('/transfer_settings/update', [AdminSettingsController::class, 'update'])->name('admin.transfer_settings.update');
-
-
-   
-
-     Route::get('/codes', [AdminUserCodeController::class, 'index'])->name('admin.codes.index');
-    Route::get('/codes/{id}/data', [AdminUserCodeController::class, 'getUserCodes']);
-    Route::post('/codes/{id}/update', [AdminUserCodeController::class, 'update']);
-});
-// ==========================
-// 🔹 USER ROUTES
-// ==========================
-Route::prefix('account')->group(function () {
-    Route::get('transfer', [TransferController::class,'index'])->name('user.transfer');
-    Route::post('transfer/local', [TransferController::class,'storeLocal'])->name('user.transfer.local');
-    Route::post('transfer/international', [TransferController::class,'storeInternational'])->name('user.transfer.international');
-    Route::post('transfer/self', [TransferController::class,'selfTransfer'])->name('user.transfer.self');
-    Route::post('verify-codes', [TransferController::class,'verifyCodes'])->name('user.verify.codes');
-    Route::get('transfers', [TransferController::class,'history'])->name('user.transfers.history');
-    Route::get('transfer/{id}', [TransferController::class,'invoice'])->name('user.transfer.invoice');
-});
+        Route::put('/transfer_settings/update', [AdminSettingsController::class, 'update'])->name('admin.transfer_settings.update');
 
 
 
-Route::get('/admin/transfers', [AdminTransferController::class, 'index'])->name('admin.transfer.index');
-    Route::post('/admin/transfers/{id}/approve', [AdminTransferController::class, 'approve'])->name('/admin/transfer.approve');
-    Route::post('admin.transfers/{id}/reject', [AdminTransferController::class, 'reject'])->name('admin.transfer.reject');
+
+        Route::get('/codes', [AdminUserCodeController::class, 'index'])->name('admin.codes.index');
+        Route::get('/codes/{id}/data', [AdminUserCodeController::class, 'getUserCodes']);
+        Route::post('/codes/{id}/update', [AdminUserCodeController::class, 'update']);
+    });
+    // ==========================
+    // 🔹 USER ROUTES
+    // ==========================
+    Route::prefix('account')->group(function () {
+        Route::get('transfer', [TransferController::class, 'index'])->name('user.transfer');
+        Route::post('transfer/local', [TransferController::class, 'storeLocal'])->name('user.transfer.local');
+        Route::post('transfer/international', [TransferController::class, 'storeInternational'])->name('user.transfer.international');
+        Route::post('transfer/self', [TransferController::class, 'selfTransfer'])->name('user.transfer.self');
+        Route::post('verify-codes', [TransferController::class, 'verifyCodes'])->name('user.verify.codes');
+        Route::get('transfers', [TransferController::class, 'history'])->name('user.transfers.history');
+
+        Route::get('transfer/{id}/invoice', [TransferController::class, 'invoice'])->name('user.transfer.invoice');
+    });
+
+
+
+
+    Route::get('admin/transfers', [AdminTransferController::class, 'index'])->name('admin.transfer.index');
+
+    Route::post('admin/transfers/{id}/approve', [AdminTransferController::class, 'approve'])->name('admin.transfer.approve');
+
+    Route::post('admin/transfers/{id}/reject', [AdminTransferController::class, 'reject'])->name('admin.transfer.reject');
+
+
 
 
 
@@ -151,6 +158,14 @@ Route::get('/admin/transfers', [AdminTransferController::class, 'index'])->name(
     // Update user profile
     Route::post('/user/profile/update', [UserProfileController::class, 'updateProfile'])->name('user.profile.update');
 
+    Route::get('/admin/profile', [AdminProfileController::class, 'index'])->name('admin.profile');
+
+    // Update user profile
+    Route::post('/admin/profile/update', [AdminProfileController::class, 'updateProfile'])->name('admin.profile.update');
+
+    // Update password
+    Route::post('/admin/password/update', [AdminProfileController::class, 'updatePassword'])->name('admin.password.update');
+
     // Update password
     Route::post('/user/password/update', [UserProfileController::class, 'updatePassword'])->name('user.password.update');
 
@@ -170,6 +185,15 @@ Route::get('/admin/transfers', [AdminTransferController::class, 'index'])->name(
     Route::post('/admin/cards/approve/{id}', [AdminCardController::class, 'approve'])->name('admin.cards.approve');
     Route::post('/admin/cards/hold/{id}', [AdminCardController::class, 'hold'])->name('admin.cards.hold');
     Route::post('/admin/cards/reject/{id}', [AdminCardController::class, 'reject'])->name('admin.cards.reject');
+
+
+
+    Route::get('admin/crypto_types', [CryptoTypeController::class, 'index'])->name('admin.crypto_types');
+    Route::post('admin/crypto_types', [CryptoTypeController::class, 'store'])->name('admin.crypto_types.store');
+    Route::get('admin/crypto_types/{cryptoType}', [CryptoTypeController::class, 'show'])->name('admin.crypto_types.show');
+    Route::put('admin/crypto_types/{cryptoType}', [CryptoTypeController::class, 'update'])->name('admin.crypto_types.update');
+    Route::delete('admin/crypto_types/{cryptoType}', [CryptoTypeController::class, 'destroy'])->name('admin.crypto_types.destroy');
+
 
 
     Route::get('/account/loans', [LoanController::class, 'index'])->name('user.loan');
@@ -242,32 +266,30 @@ Route::get('/admin/transfers', [AdminTransferController::class, 'index'])->name(
     Route::post('/admin/tickets/{id}/close', [AdminTicketController::class, 'close'])->name('admin.tickets.close');
 
 
-     Route::get('/account/deposit', [DepositController::class,'create'])->name('user.deposit.create');
-    Route::post('/account/deposit', [DepositController::class,'store'])->name('user.deposit.store');
-Route::post('/account/deposit/store', [DepositController::class, 'store'])
-    ->name('user.deposit.store');
+    Route::get('/account/deposit', [DepositController::class, 'create'])->name('user.deposit.create');
+    Route::post('/account/deposit', [DepositController::class, 'store'])->name('user.deposit.store');
+    Route::post('/account/deposit/store', [DepositController::class, 'store'])
+        ->name('user.deposit.store');
 
     // code checks
-    Route::get('/account/deposit/code-required', [DepositController::class,'codeRequired'])->name('user.deposit.codeRequired');
-    Route::post('/account/deposit/verify-code', [DepositController::class,'verifyCode'])->name('user.deposit.verifyCode');
+    Route::get('/account/deposit/code-required', [DepositController::class, 'codeRequired'])->name('user.deposit.codeRequired');
+    Route::post('/account/deposit/verify-code', [DepositController::class, 'verifyCode'])->name('user.deposit.verifyCode');
 
     // Admin deposit code management
-Route::get('/admin/depositcodes', [AdminDepositCodeController::class, 'index'])->name('admin.depositcodes');
-Route::post('/admin/depositcodes/generate', [AdminDepositCodeController::class, 'generate'])->name('admin.depositcodes.generate');
-Route::post('/admin/depositcodes/revoke/{id}', [AdminDepositCodeController::class, 'revoke'])->name('admin.depositcodes.revoke');
+    Route::get('/admin/depositcodes', [AdminDepositCodeController::class, 'index'])->name('admin.depositcodes');
+    Route::post('/admin/depositcodes/generate', [AdminDepositCodeController::class, 'generate'])->name('admin.depositcodes.generate');
+    Route::post('/admin/depositcodes/revoke/{id}', [AdminDepositCodeController::class, 'revoke'])->name('admin.depositcodes.revoke');
 
 
-Route::get('/admin/settings', [AdminSettingController::class, 'index'])
-    ->name('admin.settings.index');
+    Route::get('/admin/settings', [AdminSettingController::class, 'index'])
+        ->name('admin.settings.index');
 
-Route::post('/admin/settings/deposit-code-toggle', [AdminSettingController::class, 'depositCodeToggle'])
-    ->name('admin.settings.depositCodeToggle');
-
-
-    
-Route::get('admin/accounttypes', [AccountTypeController::class, 'index'])->name('admin.accounttypes.index');
-Route::post('admin/accounttypes/store', [AccountTypeController::class, 'store'])->name('admin.accounttypes.store');
-Route::delete('admin/accounttypes/delete/{id}', [AccountTypeController::class, 'delete'])->name('admin.accounttypes.delete');
+    Route::post('/admin/settings/deposit-code-toggle', [AdminSettingController::class, 'depositCodeToggle'])
+        ->name('admin.settings.depositCodeToggle');
 
 
+
+    Route::get('admin/accounttypes', [AccountTypeController::class, 'index'])->name('admin.accounttypes.index');
+    Route::post('admin/accounttypes/store', [AccountTypeController::class, 'store'])->name('admin.accounttypes.store');
+    Route::delete('admin/accounttypes/delete/{id}', [AccountTypeController::class, 'delete'])->name('admin.accounttypes.delete');
 });

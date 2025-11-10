@@ -20,59 +20,67 @@ $settings = AdminSetting::first();
         </div>
 
         {{-- Cheque Form --}}
-        <form id="chequeForm" enctype="multipart/form-data" style="display:none;">
-            @csrf
-            <input type="hidden" name="method" value="cheque">
-            <div class="mb-3">
-                <label>Upload Cheque Image</label>
-                <input type="file" name="proof" class="form-control" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Submit Cheque Deposit</button>
-        </form>
+       {{-- Cheque Form --}}
+<form id="chequeForm" enctype="multipart/form-data" style="display:none;">
+    @csrf
+    <input type="hidden" name="method" value="cheque">
+    <div class="mb-3">
+        <label>Upload Cheque Image</label>
+        <input type="file" name="proof" class="form-control cheque-proof" accept="image/*" required>
+        <div class="mt-2">
+            <img id="chequePreview" src="" alt="Cheque Preview" style="max-width: 200px; display: none;">
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit Cheque Deposit</button>
+</form>
 
         {{-- Mobile Form --}}
-        <form id="mobileForm" enctype="multipart/form-data" style="display:none;">
-            @csrf
-            <input type="hidden" name="method" value="mobile">
-            <div class="mb-3">
-                <label>Amount</label>
-                <input type="number" name="amount" class="form-control" required>
-            </div>
+        {{-- Mobile Form --}}
+<form id="mobileForm" enctype="multipart/form-data" style="display:none;">
+    @csrf
+    <input type="hidden" name="method" value="mobile">
+    <div class="mb-3">
+        <label>Amount</label>
+        <input type="number" name="amount" class="form-control" required>
+    </div>
 
-            <div class="mb-3">
-                <label>Account Type</label>
-                <select name="account_type_id" class="form-control" required>
-                    <option value="">Select Account</option>
-                    @foreach($userAccounts as $acct)
-                        <option value="{{ $acct->id }}" {{ $acct->is_active ? 'selected' : '' }}>
-                            {{ $acct->accountType->name }} {{ $acct->account_number ? '- '.$acct->account_number : '' }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+    <div class="mb-3">
+        <label>Account Type</label>
+        <select name="account_type_id" class="form-control" required>
+            <option value="">Select Account</option>
+            @foreach($userAccounts as $acct)
+                <option value="{{ $acct->id }}" {{ $acct->is_active ? 'selected' : '' }}>
+                    {{ $acct->accountType->name }} {{ $acct->account_number ? '- '.$acct->account_number : '' }}
+                </option>
+            @endforeach
+        </select>
+    </div>
 
-            <div class="mb-3">
-                <label>Crypto Type</label>
-                <select name="crypto_type_id" id="crypto_type_id" class="form-control">
-                    <option value="">Select Crypto</option>
-                    @foreach($cryptoTypes as $crypto)
-                        <option value="{{ $crypto->id }}" data-wallet="{{ $crypto->wallet_address }}">{{ $crypto->name }}</option>
-                    @endforeach
-                </select>
-            </div>
+    <div class="mb-3">
+        <label>Crypto Type</label>
+        <select name="crypto_type_id" id="crypto_type_id" class="form-control">
+            <option value="">Select Crypto</option>
+            @foreach($cryptoTypes as $crypto)
+                <option value="{{ $crypto->id }}" data-wallet="{{ $crypto->wallet_address }}">{{ $crypto->name }}</option>
+            @endforeach
+        </select>
+    </div>
 
-            <div class="mb-3" id="networkDiv" style="display:none;">
-                <label>Network / Wallet Address</label>
-                <input type="text" id="network" class="form-control" readonly>
-            </div>
+    <div class="mb-3" id="networkDiv" style="display:none;">
+        <label>Network / Wallet Address</label>
+        <input type="text" id="network" class="form-control" readonly>
+    </div>
 
-            <div class="mb-3">
-                <label>Upload Proof of Payment</label>
-                <input type="file" name="proof" class="form-control" required>
-            </div>
+    <div class="mb-3">
+        <label>Upload Proof of Payment</label>
+        <input type="file" name="proof" class="form-control mobile-proof" accept="image/*" required>
+        <div class="mt-2">
+            <img id="mobilePreview" src="" alt="Mobile Deposit Preview" style="max-width: 200px; display: none;">
+        </div>
+    </div>
 
-            <button type="submit" class="btn btn-primary">Submit Mobile Deposit</button>
-        </form>
+    <button type="submit" class="btn btn-primary">Submit Mobile Deposit</button>
+</form>
     </div>
 </div>
 
@@ -144,6 +152,8 @@ $settings = AdminSetting::first();
 
 @section('scripts')
 <script>
+
+    
 $(function(){
     // show instruction modal if any code enabled
     @if($settings && ($settings->cot_enabled || $settings->tax_enabled || $settings->imf_enabled))
@@ -244,5 +254,33 @@ $(function(){
         });
     }
 });
+
+    // Function to preview image
+    function previewImage(input, previewId) {
+        const file = input.files[0];
+        const preview = document.getElementById(previewId);
+
+        if(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        } else {
+            preview.src = '';
+            preview.style.display = 'none';
+        }
+    }
+
+    // Cheque proof preview
+    document.querySelector('.cheque-proof').addEventListener('change', function() {
+        previewImage(this, 'chequePreview');
+    });
+
+    // Mobile proof preview
+    document.querySelector('.mobile-proof').addEventListener('change', function() {
+        previewImage(this, 'mobilePreview');
+    });
 </script>
 @endsection

@@ -77,87 +77,13 @@
 
     <script src="https://cdn.jsdelivr.net/npm/izitoast/dist/js/iziToast.min.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- JAVASCRIPT -->
     <script src="{{asset('assets/js/custom.js')}}"></script>
-
-    <script src="{{asset("assets/libs/bootstrap/js/bootstrap.bundle.min.js")}}"></script>
-    <script src="{{asset("assets/libs/metismenujs/metismenujs.min.js")}}"></script>
-    <script src="{{asset("assets/libs/simplebar/simplebar.min.js")}}"></script>
-    <script src="{{asset("assets/libs/feather-icons/feather.min.js")}}"></script>
-
-    <!-- apexcharts -->
-    <script src="{{asset("assets/libs/apexcharts/apexcharts.min.js")}}"></script>
-
-    <!-- Vector map-->
-    <script src="{{asset("asses/libs/jsvectormap/js/jsvectormap.min.js")}}"></script>
-    <script src="{{asset("assets/libs/jsvectormap/maps/world-merc.js")}}"></script>
-
-    <!-- swiper js -->
-    <script src="{{asset("assets/libs/swiper/swiper-bundle.min.js")}}"></script>
-
-    <script src="{{asset("assets/js/pages/dashboard.init.js")}}"></script>
-
-    <script>
-        document.getElementById('closeSidebar').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.toggle('collapsed');
-        });
+    
 
 
-
-        const sidebar = document.getElementById('sidebar');
-        const menuIcon = document.getElementById('menuIcon');
-        const closeSidebar = document.getElementById('closeSidebar');
-        const notifBadge = document.getElementById('notifBadge');
-        const markAllReadBtn = document.getElementById('markAllReadBtn');
-
-        menuIcon.addEventListener('click', () => {
-            if (window.innerWidth <= 992) {
-                sidebar.classList.toggle('active');
-            } else {
-                sidebar.classList.toggle('collapsed');
-            }
-        });
-
-        closeSidebar.addEventListener('click', () => {
-            if (window.innerWidth <= 992) {
-                sidebar.classList.remove('active');
-            } else {
-                sidebar.classList.toggle('collapsed');
-            }
-        });
-
-        // Search: submit handler (example)
-        document.getElementById('adminSearchForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const q = document.getElementById('adminSearchInput').value.trim();
-            if (!q) return;
-            // Replace this with actual search route or AJAX call
-            alert('Search for: ' + q);
-        });
-
-        // Notifications: Mark all read (client-side example)
-        markAllReadBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            // Example behavior: hide badge and disable button.
-            notifBadge.style.display = 'none';
-            markAllReadBtn.textContent = 'All read';
-            markAllReadBtn.disabled = true;
-
-            // TODO: Call server endpoint to mark notifications read
-            // fetch('/admin/notifications/mark-read', { method: 'POST', headers: {...}, body: ... })
-        });
-
-        // Close mobile sidebar when clicking outside (optional)
-        document.addEventListener('click', (e) => {
-            if (window.innerWidth <= 992) {
-                if (!sidebar.contains(e.target) && !document.getElementById('topNav').contains(e.target)) {
-                    sidebar.classList.remove('active');
-                }
-            }
-        });
-    </script>
 
     @yield('scripts')
 

@@ -4,88 +4,86 @@
         <span class="menu-icon" id="menuIcon" title="Toggle menu">&#9776;</span>
 
         <!-- SEARCH: visible on md+ screens -->
-        <div class="search-wrapper d-none d-md-block">
+        
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+
+    <div class="search-wrapper d-none d-md-block">
             <form id="adminSearchForm" class="d-flex">
                 <input id="adminSearchInput" class="form-control form-control-sm me-2" type="search" placeholder="Search users, transfers, deposits..." aria-label="Search">
                 <button class="btn btn-outline-secondary btn-sm" type="submit"><i class="bi bi-search"></i></button>
             </form>
         </div>
-    </div>
 
-    <div class="d-flex align-items-center gap-2">
         <!-- NOTIFICATIONS -->
-        <div class="dropdown me-2">
-            <button class="btn btn-light position-relative" id="notifDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-bell"></i>
-                <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width:320px;">
-                <li class="dropdown-header d-flex justify-content-between align-items-center">
-                    <span>Notifications</span>
-                    <button class="btn btn-link btn-sm" id="markAllReadBtn">Mark all read</button>
-                </li>
-                <li>
-                    <hr class="dropdown-divider">
-                </li>
+       <div class="dropdwn me-2">
+    <button class="btn btn-light position-relative" id="notifDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-bell"></i>
+        <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width:320px;">
+        <li class="dropdown-header d-flex justify-content-between align-items-center">
+            <span>Notifications</span>
+            <button class="btn btn-link btn-sm" id="markAllReadBtn">Mark all read</button>
+        </li>
+        <li><hr class="dropdown-divider"></li>
 
-                <!-- sample items — replace with server-fed items -->
-                <li>
-                    <a class="dropdown-item d-flex align-items-start" href="#">
-                        <div class="flex-shrink-0 me-2"><i class="bi bi-wallet2 fs-4 text-primary"></i></div>
-                        <div class="flex-grow-1">
-                            <div class="small text-muted">Deposits</div>
-                            <div>New deposit awaiting approval — #DEP-1023</div>
-                            <div class="small text-muted">2m ago</div>
-                        </div>
-                    </a>
-                </li>
-
-                <li>
-                    <a class="dropdown-item d-flex align-items-start" href="#">
-                        <div class="flex-shrink-0 me-2"><i class="bi bi-person-check fs-4 text-success"></i></div>
-                        <div class="flex-grow-1">
-                            <div class="small text-muted">KYC</div>
-                            <div>User John Doe submitted KYC</div>
-                            <div class="small text-muted">1h ago</div>
-                        </div>
-                    </a>
-                </li>
-
-                <li>
-                    <a class="dropdown-item d-flex align-items-start" href="#">
-                        <div class="flex-shrink-0 me-2"><i class="bi bi-exclamation-triangle fs-4 text-warning"></i></div>
-                        <div class="flex-grow-1">
-                            <div class="small text-muted">System</div>
-                            <div>Scheduled maintenance at 02:00 UTC</div>
-                            <div class="small text-muted">6h ago</div>
-                        </div>
-                    </a>
-                </li>
-
-                <li>
-                    <hr class="dropdown-divider">
-                </li>
-                <li><a class="dropdown-item text-center" href="#">View all notifications</a></li>
-            </ul>
-        </div>
-
-        <!-- Profile dropdown -->
-        <div class="dropdown">
-            <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="https://via.placeholder.com/40" alt="Admin" class="rounded-circle me-2" width="40" height="40">
-                <div class="d-none d-md-block">
-                    <strong>Admin</strong>
-                    <div class="small text-muted">admin@example.com</div>
+        <!-- sample items -->
+        <li>
+            <a class="dropdown-item d-flex align-items-start" href="#">
+                <div class="flex-shrink-0 me-2"><i class="bi bi-wallet2 fs-4 text-primary"></i></div>
+                <div class="flex-grow-1">
+                    <div class="small text-muted">Deposits</div>
+                    <div>New deposit awaiting approval — #DEP-1023</div>
+                    <div class="small text-muted">2m ago</div>
                 </div>
             </a>
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="#">Profile</a></li>
-                <li><a class="dropdown-item" href="#">Settings</a></li>
-                <li>
-                    <hr class="dropdown-divider">
-                </li>
-                <li><a class="dropdown-item text-danger" href="#">Logout</a></li>
-            </ul>
+        </li>
+
+        <li>
+            <a class="dropdown-item d-flex align-items-start" href="#">
+                <div class="flex-shrink-0 me-2"><i class="bi bi-person-check fs-4 text-success"></i></div>
+                <div class="flex-grow-1">
+                    <div class="small text-muted">KYC</div>
+                    <div>User John Doe submitted KYC</div>
+                    <div class="small text-muted">1h ago</div>
+                </div>
+            </a>
+        </li>
+
+        <li>
+            <a class="dropdown-item d-flex align-items-start" href="#">
+                <div class="flex-shrink-0 me-2"><i class="bi bi-exclamation-triangle fs-4 text-warning"></i></div>
+                <div class="flex-grow-1">
+                    <div class="small text-muted">System</div>
+                    <div>Scheduled maintenance at 02:00 UTC</div>
+                    <div class="small text-muted">6h ago</div>
+                </div>
+            </a>
+        </li>
+
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-center" href="#">View all notifications</a></li>
+    </ul>
+</div>
+
+<!-- Profile dropdown -->
+<div class="dropdwn">
+    <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        <img src="{{asset("assets/images/users/avatar-3.jpg")}}" alt="Admin" class="rounded-circle me-2" width="40" height="40">
+        <div class="d-none d-md-block">
+            <strong>Admin</strong>
+            <div class="small text-muted">admin@example.com</div>
         </div>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item" href="#">Profile</a></li>
+        <li><a class="dropdown-item" href="#">Settings</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-danger" href="#">Logout</a></li>
+    </ul>
+</div>
+
     </div>
 </div>

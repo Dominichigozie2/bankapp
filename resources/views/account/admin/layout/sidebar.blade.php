@@ -1,107 +1,69 @@
-<div class="vertical-menu" style="transition: all 0.3s;" id="sidebar">
-    <div data-simplebar class="h-100" style="display: flex; flex-direction: column;
-    justify-content: space-between;">
-        <div class="logo" style="width: 100px;padding: 1rem; gap: 1rem; align-items: center; display: flex;">
-            <img src="/assets/images/logo-sm.svg" style="width: 70px;" alt="">
-            <h4>Logo</h4>
-        </div>
-        <!--- Sidebar Menu -->
-        <div id="sidebar-menu" class="mm-active" style="margin-top: 8rem;">
-            <ul class="metismenu list-unstyled sidelist" id="side-menu">
-                <li class="menu-title">Main</li>
+<div class="sidebar d-flex flex-column" id="sidebar">
+  <div class="logo d-flex justify-content-between align-items-center px-3 py-2">
+    <img src="/assets/images/logo-sm.svg" width="30px" alt="">
+    <h4 class="m-0"><span>AdminPanel</span></h4>
+    <button class="btn-close btn-close-white" id="closeSidebar"></button>
+  </div>
 
-                <li>
-                    <a href="/admin/dashboard" class="waves-effect active waves-light">
-                        <i class="bx bx-grid"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
+  <ul class="nav flex-column">
+    <li class="nav-item">
+      <a href="/admin/dashboard" class="nav-link active text-white"><i class="bi bi-speedometer2 me-2"></i> <span>Dashboard</span></a>
+    </li>
 
-                <li class="mb-2">
-                    <a
-                        class="text-white text-decoration-none d-flex justify-content-between align-items-center"
-                        data-bs-toggle="collapse"
-                        href="#DepositSubmenu"
-                        role="button"
-                        aria-expanded="false"
-                        aria-controls="DepositSubmenu">
-                        <span><i class="bx bx-wallet"></i>
-                            Deposit</span>
-                        <i class="bx bx-chevron-down"></i>
-                    </a>
+    <li style="background: #220f32ff;"> Funding</li>
+    <li class="nav-item">
+      <a href="/admin/transfers" class="nav-link text-white"><i class="bi bi-arrow-left-right me-2"></i> <span>Deposit</span></a>
+    </li>
+    <li class="nav-item">
+      <a href="/admin/transfers" class="nav-link text-white"><i class="bi bi-arrow-left-right me-2"></i> <span>Transfers</span></a>
+    </li>
 
-                    <!-- Submenu -->
-                    <ul class="collapse list-unstyled ps-4 mt-2" id="DepositSubmenu">
-                        <li><a href="/admin/deposit">Deposit</a></li>
-                        <li><a href="/admin/depositcodes">Deposit Settings</a></li>
-                    </ul>
-                </li>
+    <li class="nav-item">
+      <a href="/admin/cards" class="nav-link text-white"><i class="bi bi-credit-card-2-back me-2"></i> <span>Card</span></a>
+    </li>
 
+    <li class="nav-item">
+      <a href="/admin/loans" class="nav-link text-white"><i class="bi bi-credit-card-2-back me-2"></i> <span>loans</span></a>
+    </li>
 
-                <li>
-                    <a href="/admin/cards">
-                        <i class="bx bx-card"></i>
-                        <span>Card</span>
-                    </a>
-                </li>
+    <li style="background: #220f32ff;"> User Management</li>
+    <li class="nav-item">
+      <a href="/admin/user" class="nav-link text-white"><i class="bi bi-credit-card-2-back me-2"></i> <span>User</span></a>
+    </li>
+    <li class="nav-item">
+      <a href="/admin/kyc" class="nav-link text-white"><i class="bi bi-credit-card-2-back me-2"></i> <span>kyc Verification</span></a>
+    </li>
 
-                <li>
-                    <a href="/admin/user">
-                        <i class="bx bx-user"></i>
-                        <span>User</span>
-                    </a>
-                </li>
+    <li class="nav-item dropbtn">
+      <a class="nav-link text-white">
+        <i class="bi bi-person me-2"></i>
+        <span>My Account <i class="bi bi-caret-down-fill"></i></span>
+      </a>
+      <ul class="dropdown">
+        <li><a href="/admin/profile"><span>Profile</span></a></li>
+      </ul>
+    </li>
 
-                <li>
-                    <a href="/admin/kyc">
-                        <i class="bx bx-check"></i>
-                        <span>KYC</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="/admin/loans">
-                        <i class="bx bx-arrow-to-bottom"></i>
-                        <span>Loan</span>
-                    </a>
-                </li>
-
-                <li class="mb-2">
-                    <a
-                        class="text-white text-decoration-none d-flex justify-content-between align-items-center"
-                        data-bs-toggle="collapse"
-                        href="#SettingsSubmenu"
-                        role="button"
-                        aria-expanded="false"
-                        aria-controls="SettingsSubmenu">
-                        <span><i class='bx bx-slider'></i>
-                            Settings</span>
-                        <i class="bx bx-chevron-down"></i>
-                    </a>
-
-                    <!-- Submenu -->
-                    <ul class="collapse list-unstyled ps-4 mt-2" id="SettingsSubmenu">
-                        <li><a href="/admin/codes">Generate Transfer Code</a></li>
-                        <li><a href="/admin/transfer_settings">Enable Transfers</a></li>
-                    </ul>
-                </li>
+    <li style="background: #220f32ff;"> Settings & Profile</li>
 
 
-            </ul>
+    <li class="nav-item dropbtn">
+      <a class="nav-link text-white">
+        <i class="bi bi-patch-question me-2"></i>
+        <span>SyStem Settings <i class="bi bi-caret-down-fill "></i></span>
+      </a>
+      <ul class="dropdown">
+        <li><a href="/admin/transfer_settings"><span>Settings</span></a></li>
+        <li><a href="/admin/tickets"><span>Tickets</span></a></li>
+        <li><a href="/admin/crypto_types"><span>Crypto</span></a></li>
+      </ul>
+    </li>
 
-        </div>
 
-        <ul class="logout" style="margin-top: 2rem;">
-            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                @csrf
-            </form>
 
-            <li>
-                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    Logout
-                </a>
-            </li>
-        </ul>
-        <!-- Sidebar -->
+    <div class="logout px-3 py-2 mt-auto border-top border-secondary">
+      <a href="#" class="nav-link text-white">
+        <i class="bi bi-box-arrow-right me-2"></i> <span>Logout</span>
+      </a>
     </div>
 </div>
