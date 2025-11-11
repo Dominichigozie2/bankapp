@@ -1,38 +1,50 @@
 @extends('account.user.layout.app')
 @section('content')
 
+<!-- Welcome Modal -->
+<div class="modal fade" id="welcomeModal" tabindex="-1" aria-labelledby="welcomeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="welcomeModalLabel">Welcome!</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Hello, <strong>{{ Auth::user()->name }}</strong>! Welcome back to your dashboard.</p>
+                <p>Have a productive day!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Start</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row g-4">
     <!-- Profile & Balances Card -->
     <div class="col-lg-6 col-md-6">
         <div class="card border-0 shadow-lg rounded-50 position-relative">
-            <!-- Deposit icon -->
             <button class="btn btn-primary position-absolute top-0 end-0 m-3 rounded-circle" title="Add Deposit">
                 <i class="bi bi-plus-lg"></i>
             </button>
-
             <div class="card-body text-center">
-                <!-- Profile -->
                 <div class="row d-flex align-items-center gap-3 mb-3">
                     <div class="col-1">
                         <img width="40" height="40" class="rounded-circle mb-3"
-                             src="{{ Auth::user()->avatar ? asset('storage/' . Auth::user()->avatar) : asset('assets/images/users/avatar-3.jpg') }}"
-
+                            src="{{ Auth::user()->avatar ? asset('storage/' . Auth::user()->avatar) : asset('assets/images/users/avatar-3.jpg') }}"
                             alt="Profile">
-
                     </div>
                     <h5 class="mb-1 col-5 fw-bold text-start">{{ $user->first_name }}</h5>
                 </div>
+
                 <div class="row bg-primary text-white rounded-3 p-3 mx-1 my-3">
                     <p class="text-white small mb-3">Account Balance</p>
-
-                    <!-- Main Balance -->
                     @php
                     $totalBalance = ($balances['current'] ?? 0) + ($balances['savings'] ?? 0) - ($balances['loan'] ?? 0);
                     @endphp
                     <h3 class="fw-semibold text-white mb-4">₦{{ number_format($totalBalance, 2) }}</h3>
                 </div>
 
-                <!-- Mini Balances -->
                 <div class="row text-center mb-3">
                     <div class="col-4">
                         <small class="text-muted">Loan</small>
@@ -48,7 +60,6 @@
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="d-flex justify-content-around mt-3">
                     <button class="btn btn-outline-primary btn-sm d-flex align-items-center">
                         <i class="bi bi-wallet2 me-1"></i> Deposit
@@ -83,7 +94,6 @@
                 </div>
                 <hr>
                 @endforeach
-
             </div>
         </div>
     </div>
@@ -91,7 +101,6 @@
 
 <!-- Row 2: Recent Transactions and Activities -->
 <div class="row g-4" style="margin-bottom: 2rem;">
-
     <!-- Recent Transactions -->
     <div class="col-lg-8">
         <div class="card border-0 shadow-sm">
@@ -100,41 +109,53 @@
                 <a href="#" class="text-primary small">View All</a>
             </div>
             <div class="card-body">
-                <ul class="list-group list-group-flush">
-                    @forelse($recentDeposits as $deposit)
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-start">
-                            <div class="icon-box 
-                                    @if($deposit->type == 'deposit' || $deposit->type == 'self_credit') bg-primary bg-opacity-10 text-success 
-                                    @else bg-danger bg-opacity-10 text-danger @endif
-                                    rounded-circle me-3 d-flex align-items-center justify-content-center" style="width:40px; height:40px;">
-                                <i class="
-                                        @if($deposit->type == 'deposit' || $deposit->type == 'self_credit') bi bi-arrow-down-circle text-primary
-                                        @else bi bi-arrow-up-circle text-danger @endif
-                                        fs-5"></i>
-                            </div>
-                            <div>
-                                <div class="fw-semibold">
-                                    @if($deposit->type == 'deposit') Deposit
-                                    @elseif($deposit->type == 'self_credit') Self Credit
-                                    @elseif($deposit->type == 'loan') Loan Payment
-                                    @else Transfer @endif
-                                </div>
-                                <small class="text-muted">{{ $deposit->created_at->format('M d, Y') }}</small>
-                            </div>
-                        </div>
-                        <div class="text-end">
-                            <div class="fw-semibold 
-                                    @if($deposit->type == 'deposit' || $deposit->type == 'self_credit' || $deposit->type == 'loan') text-success 
-                                    @else text-danger @endif">
-                                @if($deposit->type == 'deposit' || $deposit->type == 'self_credit' || $deposit->type == 'loan') + @else - @endif ₦{{ number_format($deposit->amount, 2) }}
-                            </div>
-                        </div>
-                    </li>
-                    @empty
-                    <li class="list-group-item text-center text-muted">No recent transactions</li>
-                    @endforelse
-                </ul>
+               <ul class="list-group list-group-flush">
+    @forelse($recentDeposits as $deposit)
+        @php
+            $method = $deposit->method ?? 'deposit';
+
+            // Determine if this is a "debit" (negative) transaction
+            if(in_array($method, ['transfer_local', 'transfer_international'])) {
+                $iconClass = 'bi bi-arrow-up-circle text-danger';
+                $bgClass = 'bg-danger bg-opacity-10 text-danger';
+                $sign = '-';
+                $label = 'Transfer';
+            } else {
+                // All other transactions are credits
+                $iconClass = 'bi bi-arrow-down-circle text-success';
+                $bgClass = 'bg-success bg-opacity-10 text-success';
+                $sign = '+';
+                
+                // Determine label
+                if($method == 'deposit') $label = 'Deposit';
+                elseif($method == 'self_credit') $label = 'Self Credit';
+                elseif($method == 'loan') $label = 'Loan Payment';
+                else $label = ucfirst($method); // fallback label
+            }
+        @endphp
+
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-start">
+                <div class="icon-box {{ $bgClass }} rounded-circle me-3 d-flex align-items-center justify-content-center" style="width:40px; height:40px;">
+                    <i class="{{ $iconClass }} fs-5"></i>
+                </div>
+                <div>
+                    <div class="fw-semibold">{{ $label }}</div>
+                    <small class="text-muted">{{ $deposit->created_at->format('M d, Y') }}</small>
+                </div>
+            </div>
+            <div class="text-end">
+                <div class="fw-semibold {{ $sign == '+' ? 'text-success' : 'text-danger' }}">
+                    {{ $sign }} ₦{{ number_format($deposit->amount, 2) }}
+                </div>
+            </div>
+        </li>
+    @empty
+        <li class="list-group-item text-center text-muted">No recent transactions</li>
+    @endforelse
+</ul>
+
+
             </div>
         </div>
     </div>
@@ -151,14 +172,14 @@
                     @forelse($recentActivities as $activity)
                     <li class="list-group-item d-flex align-items-start">
                         <i class="
-                                @if($activity->type == 'deposit' || $activity->type == 'self_credit') bi bi-arrow-down-circle text-success
-                                @elseif($activity->type == 'loan') bi bi-wallet2 text-primary
-                                @elseif($activity->type == 'profile') bi bi-person-circle text-secondary
-                                @else bi bi-arrow-up-circle text-danger @endif
-                                fs-5 me-3"></i>
+                @if($activity->type == 'deposit' || $activity->type == 'self_credit') bi bi-arrow-down-circle text-success
+                @elseif($activity->type == 'loan') bi bi-wallet2 text-primary
+                @elseif($activity->type == 'profile') bi bi-person-circle text-secondary
+                @elseif($activity->type == 'login') bi bi-box-arrow-in-right text-info
+                @else bi bi-arrow-up-circle text-danger @endif
+                fs-5 me-3"></i>
                         <div>
                             <div class="fw-semibold">{{ $activity->description }}</div>
-                            <small class="text-muted">{{ $activity->amount ? '₦'.number_format($activity->amount,2) : '' }} {{ $activity->note ?? '' }}</small><br>
                             <small class="text-muted">{{ $activity->created_at->diffForHumans() }}</small>
                         </div>
                     </li>
@@ -166,6 +187,7 @@
                     <li class="list-group-item text-center text-muted">No recent activities</li>
                     @endforelse
                 </ul>
+
             </div>
         </div>
     </div>
@@ -174,7 +196,17 @@
 @endsection
 
 @section('scripts')
+@if($showWelcome)
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var welcomeModal = new bootstrap.Modal(document.getElementById('welcomeModal'));
+        welcomeModal.show();
+    });
+</script>
+@endif
+
+<script>
+    // Copy account number
     document.querySelectorAll('.copy-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const value = btn.dataset.copy;

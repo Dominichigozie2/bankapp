@@ -50,6 +50,12 @@
 </head>
 
 
+<style>
+    .body-content{
+        margin-bottom: 5rem;
+    }
+</style>
+
 <body>
 
     {{-- Sidebar --}}
@@ -59,7 +65,7 @@
     @include('account.admin.layout.header')
 
     <div class="main-content" id="mainContent">
-        <div class="container-fluid">
+        <div class="container-fluid body-content">
 
 
             {{-- Main Content --}}

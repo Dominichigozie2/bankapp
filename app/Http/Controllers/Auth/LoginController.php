@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\Activity; // ✅ Add this
 
 class LoginController extends Controller
 {
@@ -43,6 +44,14 @@ class LoginController extends Controller
         // ✅ If admin disabled passcode
         if (!$user->passcode_allow) {
             Auth::login($user);
+
+            // ✅ Activity log for successful login
+            Activity::create([
+                'user_id' => $user->id,
+                'type' => 'login',
+                'description' => 'Logged into dashboard (passcode skipped).',
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Login successful (passcode skipped).',
@@ -89,6 +98,13 @@ class LoginController extends Controller
         }
 
         Auth::login($user);
+
+        // ✅ Activity log for successful login with passcode
+        Activity::create([
+            'user_id' => $user->id,
+            'type' => 'login',
+            'description' => 'Logged into dashboard (passcode verified).',
+        ]);
 
         return response()->json([
             'success' => true,

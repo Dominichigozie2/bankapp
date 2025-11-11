@@ -1,5 +1,4 @@
 <?php
-
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\Admin\AdminSettingsController;
 use App\Http\Controllers\Admin\AdminTransferController;
@@ -22,6 +21,7 @@ use App\Http\Controllers\AdminLoanController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\AdminTicketController;
 use App\Http\Controllers\AdminDepositCodeController;
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminProfileController;
 use App\Http\Controllers\BankStatementController;
 use App\Http\Controllers\Admin\CryptoTypeController;
@@ -41,6 +41,7 @@ Route::post('/register', [RegisterController::class, 'store'])->name('register.p
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
+
 
 Route::post('/user/save-passcode', [LoginController::class, 'savePasscode'])->name('user.save.passcode');
 
@@ -82,6 +83,21 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/codes', [AdminUserCodeController::class, 'index'])->name('admin.codes.index');
         Route::get('/codes/{id}/data', [AdminUserCodeController::class, 'getUserCodes']);
         Route::post('/codes/{id}/update', [AdminUserCodeController::class, 'update']);
+
+
+
+
+
+
+        Route::post('/send-email', [AdminDashboardController::class, 'sendEmail'])->name('admin.sendEmail');
+
+         Route::get('/credit-debit', [AdminDashboardController::class, 'creditDebitForm'])->name('admin.creditdebit');
+    Route::post('/credit-debit', [AdminDashboardController::class, 'creditDebitProcess'])->name('admin.creditdebit.process');
+
+    Route::get('/credit-debit', [AdminDashboardController::class, 'creditDebitForm'])->name('admin.creditdebit');
+
+
+
     });
     // ==========================
     // 🔹 USER ROUTES
@@ -111,14 +127,13 @@ Route::middleware(['auth'])->group(function () {
 
 
 
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
 
 
     Route::get('/account/dashboard', [DashboardController::class, 'dashboard'])->name('account.user.index');
 
-    Route::get('/admin/dashboard', function () {
-        return view('account.admin.index');
-    })->name('admin.dashboard');
+
 
     Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
 

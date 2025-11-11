@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\UserAccount;
 use App\Models\Deposit;
-// use App\Models\Withdrawal;
 use App\Models\Loan;
 use App\Models\AccountType;
 use App\Models\Activity;
@@ -26,12 +25,12 @@ class DashboardController extends Controller
         $balances = [];
         $accountNumbers = [];
         foreach ($userAccounts as $account) {
-            $typeName = strtolower($account->accountType->name); // e.g., 'savings', 'current', 'loan'
+            $typeName = strtolower($account->accountType->name);
             $balances[$typeName] = $account->account_amount;
             $accountNumbers[$typeName] = $account->account_number;
         }
 
-        // Ensure keys exist even if the user doesn't have certain account types
+        // Ensure keys exist even if missing
         $balances['savings'] = $balances['savings'] ?? 0;
         $balances['current'] = $balances['current'] ?? 0;
         $balances['loan'] = $balances['loan'] ?? 0;
@@ -52,13 +51,21 @@ class DashboardController extends Controller
         $recentDeposits = Deposit::where('user_id', $user->id)
             ->latest()
             ->take(5)
-            ->get(['amount', 'created_at']);
+            ->get(['amount', 'created_at', 'method']);
+
 
         // Recent activities
         $recentActivities = Activity::where('user_id', $user->id)
             ->latest()
             ->take(5)
-            ->get(['description', 'created_at']);
+            ->get();
+
+        // Show welcome modal only once per session
+        $showWelcome = false;
+        if (!session()->has('welcome_shown')) {
+            session(['welcome_shown' => true]);
+            $showWelcome = true;
+        }
 
         return view('account.user.index', compact(
             'user',
@@ -68,7 +75,8 @@ class DashboardController extends Controller
             'recentActivities',
             'loanBalance',
             'totalDeposits',
-            'userAccounts'
+            'userAccounts',
+            'showWelcome'
         ));
     }
 }

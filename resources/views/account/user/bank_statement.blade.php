@@ -1,16 +1,41 @@
 @extends('account.user.layout.app')
 
 @section('content')
+
+<!-- Receipt Modal -->
+<div class="modal fade" id="receiptModal" tabindex="-1" aria-labelledby="receiptModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="receiptModalLabel">Transaction Receipt</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Date:</strong> <span id="receiptDate"></span></p>
+        <p><strong>Type:</strong> <span id="receiptType"></span></p>
+        <p><strong>Details:</strong> <span id="receiptDetails"></span></p>
+        <p><strong>Amount:</strong> ₦<span id="receiptAmount"></span></p>
+        <p><strong>Status:</strong> <span id="receiptStatus"></span></p>
+      </div>
+      <div class="modal-footer">
+        <a id="downloadReceiptBtn" href="#" class="btn btn-success"><i class="bi bi-download"></i> Download PDF</a>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="container card p-4 w-60 mt-4">
-    
-        
-        <div class="d-flex justify-content-between align-items-center w-100 mb-4">
-            <h2>Bank Statement</h2>
-            <a href="{{ route('account.bank.statement.download', request()->query()) }}" class="btn btn-success">
-                <i class="bi bi-download"></i> Download
-            </a>
-        </div>
-    
+
+
+
+    <div class="d-flex justify-content-between align-items-center w-100 mb-4">
+        <h2>Bank Statement</h2>
+        <a href="{{ route('account.bank.statement.download', request()->query()) }}" class="btn btn-success">
+            <i class="bi bi-download"></i> Download
+        </a>
+    </div>
+
     {{-- Filter Form --}}
     <form method="GET" class="row g-3 mb-4">
         <div class="col-md-3">
@@ -33,7 +58,7 @@
             </select>
         </div>
         <div class="col-md-3">
-            
+
             <button class="btn btn-primary" type="submit">Filter</button>
         </div>
 
@@ -43,32 +68,47 @@
     <table class="table table-striped table-hover">
         <thead>
             <tr>
-                <th><i class="bi bi-calendar-date"></i> Time</th>
+                <th>Time</th>
                 <th>Type</th>
                 <th>Details</th>
                 <th>Amount</th>
                 <th>Status</th>
+                <th>Receipt</th>
             </tr>
         </thead>
         <tbody>
             @forelse($transactions as $tx)
             @php
-            // Colors and icons
-            $statusColor = $tx['status'] === 'pending' ? 'text-warning fw-bold' : 'text-success fw-bold';
+            $statusColor = in_array($tx['status'], [1,'1']) ? 'text-success fw-bold' : 'text-danger fw-bold';
+            $statusText = in_array($tx['status'], [1,'1']) ? 'Successful' : 'Pending';
             $isTransfer = in_array($tx['type'], ['Local Transfer','International Transfer']);
-            $amountColor = ($tx['type'] === 'Deposit' || $tx['type'] === 'Self Transfer') ? 'text-success' : ($isTransfer ? 'text-danger' : 'text-muted');
-            $amountSign = ($tx['type'] === 'Deposit' || $tx['type'] === 'Self Transfer') ? '+' : ($isTransfer ? '-' : '');
+            $amountColor = ($tx['type'] === 'Deposit' || $tx['type'] === 'Self Transfer' || $tx['type'] === 'Loan') ? 'text-success' : ($isTransfer ? 'text-danger' : 'text-muted');
+            $amountSign = ($tx['type'] === 'Deposit' || $tx['type'] === 'Self Transfer' || $tx['type'] === 'Loan') ? '+' : ($isTransfer ? '-' : '');
             @endphp
             <tr>
-                <td><i class="bi bi-calendar-date me-1"></i>{{ \Carbon\Carbon::parse($tx['created_at'])->format('d M Y, H:i') }}</td>
+                <td>{{ \Carbon\Carbon::parse($tx['created_at'])->format('d M Y, H:i') }}</td>
                 <td>{{ $tx['type'] }}</td>
                 <td>{{ $tx['details'] }}</td>
-                <td class="{{ $amountColor }}">{{ $amountSign }}{{ number_format($tx['amount'], 2) }}</td>
-                <td class="{{ $statusColor }}">{{ ucfirst($tx['status']) }}</td>
+                <td class="{{ $amountColor }}">{{ $amountSign }}{{ number_format($tx['amount'],2) }}</td>
+                <td class="{{ $statusColor }}">{{ $statusText }}</td>
+                <td>
+                    <button
+                        class="btn btn-sm btn-primary view-receipt-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#receiptModal"
+                        data-id="{{ $tx['id'] }}"
+                        data-type="{{ $tx['type'] }}"
+                        data-details="{{ $tx['details'] }}"
+                        data-amount="{{ $tx['amount'] }}"
+                        data-status="{{ $statusText }}"
+                        data-date="{{ \Carbon\Carbon::parse($tx['created_at'])->format('d M Y, H:i') }}">
+                        <i class="bi bi-eye"></i> View
+                    </button>
+                </td>
             </tr>
             @empty
             <tr>
-                <td colspan="5" class="text-center">No transactions found.</td>
+                <td colspan="6" class="text-center">No transactions found.</td>
             </tr>
             @endforelse
         </tbody>
@@ -95,4 +135,30 @@
         background-color: #f1f1f1;
     }
 </style>
+
+
+
+<script>
+document.querySelectorAll('.view-receipt-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const type = btn.dataset.type;
+        const details = btn.dataset.details;
+        const amount = btn.dataset.amount;
+        const status = btn.dataset.status;
+        const date = btn.dataset.date;
+
+        document.getElementById('receiptDate').innerText = date;
+        document.getElementById('receiptType').innerText = type;
+        document.getElementById('receiptDetails').innerText = details;
+        document.getElementById('receiptAmount').innerText = parseFloat(amount).toFixed(2);
+        document.getElementById('receiptStatus').innerText = status;
+
+        // Set download link
+        document.getElementById('downloadReceiptBtn').href = '/bank-statement/receipt/download/' + id;
+    });
+});
+</script>
+
+
 @endsection

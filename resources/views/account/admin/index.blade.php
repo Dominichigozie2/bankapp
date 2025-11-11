@@ -12,7 +12,7 @@
                             <div>
                                 <h6 class="fs-7 fw-lighter text-white mb-4">Total Balance</h6>
                                 <br>
-                                <h3 class="card-text text-white">$125,000</h3>
+                                <h3 class="card-text text-white">${{ number_format($totalBalance, 2) }}</h3>
                             </div>
                             <a href="#" class="hover:bg-opacity-0 icon-box bg-white bg-opacity-10 text-white rounded-circle me-3 d-flex align-items-center justify-content-center" style="width:50px; height:50px;">
 
@@ -29,7 +29,7 @@
                             <div>
                                 <h6 class="fs-7 fw-lighter mb-4">Total Users</h6>
                                 <br>
-                                <h3 class="card-text">342</h3>
+                                <h3 class="card-text">{{ $totalUsers }}</h3>
                             </div>
                             <a href="#" class="hover:bg-opacity-0 icon-box bg-primary bg-opacity-10 text-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width:50px; height:50px;">
 
@@ -46,7 +46,7 @@
                             <div>
                                 <h6 class="fs-7 fw-lighter mb-4">Total Wire Transfers</h6>
                                 <br>
-                                <h3 class="card-text">$78,200</h3>
+                                <h3 class="card-text">${{ number_format($totalWire, 2) }}</h3>
                             </div>
                             <a href="#" class="hover:bg-opacity-0 icon-box bg-primary bg-opacity-10 text-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width:50px; height:50px;">
 
@@ -63,7 +63,7 @@
                             <div>
                                 <h6 class="fs-7 fw-lighter mb-4">Total Domestic Transfers</h6>
                                 <br>
-                                <h3 class="card-text">$54,300</h3>
+                                <h3 class="card-text">${{ number_format($totalDomestic, 2) }}</h3>
                             </div>
                             <a href="#" class="hover:bg-opacity-0 icon-box bg-primary bg-opacity-10 text-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width:50px; height:50px;">
 
@@ -83,7 +83,7 @@
                             <div>
                                 <h6 class="fs-7 fw-lighter mb-4">Total Current Balance</h6>
                                 <br>
-                                <h3 class="card-text">$65,000</h3>
+                                <h3 class="card-text">${{ number_format($currentBalance, 2) }}</h3>
                             </div>
                             <a href="#" class="hover:bg-opacity-0 icon-box bg-primary bg-opacity-10 text-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width:50px; height:50px;">
 
@@ -100,7 +100,7 @@
                             <div>
                                 <h6 class="fs-7 fw-lighter mb-4">Total Savings Balance</h6>
                                 <br>
-                                <h3 class="card-text">$60,500</h3>
+                                <h3 class="card-text">${{ number_format($savingsBalance, 2) }}</h3>
                             </div>
                             <a href="#" class="hover:bg-opacity-0 icon-box bg-primary bg-opacity-10 text-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width:50px; height:50px;">
 
@@ -117,7 +117,7 @@
                             <div>
                                 <h6 class="fs-7 fw-lighter mb-4">Total Cards</h6>
                                 <br>
-                                <h3 class="card-text">128</h3>
+                                <h3 class="card-text">{{ $totalCards }}</h3>
                             </div>
                             <a href="#" class="hover:bg-opacity-0 icon-box bg-primary bg-opacity-10 text-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width:50px; height:50px;">
 
@@ -134,7 +134,7 @@
                             <div>
                                 <h6 class="fs-7 fw-lighter mb-4">Total Tickets</h6>
                                 <br>
-                                <h3 class="card-text">47</h3>
+                                <h3 class="card-text">{{ $totalTickets }}</h3>
                             </div>
                             <a href="#" class="hover:bg-opacity-0 icon-box bg-primary bg-opacity-10 text-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width:50px; height:50px;">
 
@@ -162,10 +162,9 @@
                                     <label for="userEmail" class="form-label">To</label>
                                     <select class="form-select" id="userEmail" required>
                                         <option value="" selected disabled>Select User</option>
-                                        <option value="user1@example.com">user1@example.com</option>
-                                        <option value="user2@example.com">user2@example.com</option>
-                                        <option value="user3@example.com">user3@example.com</option>
-                                        <!-- Add more demo users -->
+                                        @foreach($users as $user)
+                                        <option value="{{ $user->email }}">{{ $user->name }} ({{ $user->email }})</option>
+                                        @endforeach
                                     </select>
                                 </div>
 
@@ -179,10 +178,11 @@
                                     <textarea class="form-control" id="emailBody" rows="5" placeholder="Type your message..." required></textarea>
                                 </div>
 
-                                <button type="submit" class="btn btn-success w-100">
+                                <button type="submit" class="btn btn-primary w-100">
                                     <i class="bi bi-envelope-fill me-1"></i> Send
                                 </button>
                             </form>
+
                         </div>
                     </div>
                 </div>
@@ -194,35 +194,31 @@
                             <h5 class="mb-0">Recent Users</h5>
                         </div>
                         <div class="card-body p-0">
-                            <table class="table table-striped mb-0">
+                            <table class="table mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>#</th>
+
+                                        <th></th>
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Joined</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>1</td>
-                                        <td>John Doe</td>
-                                        <td>john@example.com</td>
-                                        <td>2025-11-01</td>
+                                    @foreach($recentUsers as $user)
+                                    <tr class="align-middle">
+
+                                        <td>
+                                            <a href="#" class="hover:bg-opacity-0 icon-box bg-primary bg-opacity-10 text-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width:30px; height:30px;">
+
+                                                <i class="bi bi-person fs-7 "></i>
+                                            </a>
+                                        </td>
+                                        <td>{{ $user->first_name }}</td>
+                                        <td>{{ $user->email }}</td>
+                                        <td>{{ $user->created_at->format('Y-m-d') }}</td>
                                     </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>Jane Smith</td>
-                                        <td>jane@example.com</td>
-                                        <td>2025-11-02</td>
-                                    </tr>
-                                    <tr>
-                                        <td>3</td>
-                                        <td>Michael Lee</td>
-                                        <td>michael@example.com</td>
-                                        <td>2025-11-03</td>
-                                    </tr>
-                                    <!-- More demo rows -->
+                                    @endforeach <!-- More demo rows -->
                                 </tbody>
                             </table>
                         </div>
@@ -238,13 +234,29 @@
         <script>
             document.getElementById('quickEmailForm').addEventListener('submit', function(e) {
                 e.preventDefault();
-                const to = document.getElementById('userEmail').value;
-                const subject = document.getElementById('emailSubject').value;
-                const body = document.getElementById('emailBody').value;
 
-                // Demo action
-                alert(`Email sent to ${to}\nSubject: ${subject}\nMessage: ${body}`);
-                this.reset();
+                const form = this;
+                const data = {
+                    to: document.getElementById('userEmail').value,
+                    subject: document.getElementById('emailSubject').value,
+                    body: document.getElementById('emailBody').value,
+                    _token: '{{ csrf_token() }}'
+                };
+
+                $.post("{{ route('admin.sendEmail') }}", data, function(res) {
+                    if (res.success) {
+                        iziToast.success({
+                            title: 'Success',
+                            message: res.message
+                        });
+                        form.reset();
+                    } else {
+                        iziToast.error({
+                            title: 'Error',
+                            message: res.message
+                        });
+                    }
+                });
             });
         </script>
         @endsection
