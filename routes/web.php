@@ -23,9 +23,11 @@ use App\Http\Controllers\TicketController;
 use App\Http\Controllers\AdminTicketController;
 use App\Http\Controllers\AdminDepositCodeController;
 use App\Http\Controllers\AdminProfileController;
+use App\Http\Controllers\BankStatementController;
 use App\Http\Controllers\Admin\CryptoTypeController;
 use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 use App\Http\Controllers\AccountTypeController;
+use App\Http\Controllers\ActivityController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -93,6 +95,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('transfers', [TransferController::class, 'history'])->name('user.transfers.history');
 
         Route::get('transfer/{id}/invoice', [TransferController::class, 'invoice'])->name('user.transfer.invoice');
+
+        Route::post('/account/verify-single-code', [TransferController::class, 'verifySingleCode'])
+            ->name('user.verify.singlecode');
     });
 
 
@@ -103,6 +108,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('admin/transfers/{id}/approve', [AdminTransferController::class, 'approve'])->name('admin.transfer.approve');
 
     Route::post('admin/transfers/{id}/reject', [AdminTransferController::class, 'reject'])->name('admin.transfer.reject');
+
 
 
 
@@ -270,6 +276,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/account/deposit', [DepositController::class, 'store'])->name('user.deposit.store');
     Route::post('/account/deposit/store', [DepositController::class, 'store'])
         ->name('user.deposit.store');
+    Route::post('/deposit/verify-single-code', [DepositController::class, 'verifySingleCode'])
+        ->name('user.deposit.verifySingleCode');
+
 
     // code checks
     Route::get('/account/deposit/code-required', [DepositController::class, 'codeRequired'])->name('user.deposit.codeRequired');
@@ -292,4 +301,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('admin/accounttypes', [AccountTypeController::class, 'index'])->name('admin.accounttypes.index');
     Route::post('admin/accounttypes/store', [AccountTypeController::class, 'store'])->name('admin.accounttypes.store');
     Route::delete('admin/accounttypes/delete/{id}', [AccountTypeController::class, 'delete'])->name('admin.accounttypes.delete');
+
+
+    // Display the bank statement with filters and pagination
+    Route::get('/account/bank-statement', [BankStatementController::class, 'index'])
+        ->name('user.bank_statement');
+
+    Route::get('/account/bank-statement/download', [BankStatementController::class, 'download'])->name('account.bank.statement.download');
+
+    Route::get('/account/activities', [ActivityController::class, 'index'])->name('user.activities');
 });

@@ -66,13 +66,18 @@
                 </div>
 
                 <div class="mt-3">
-                    <label>Deposit Modal Message</label>
+                    <label>COT Message</label>
                     <textarea name="cot_message" class="form-control" rows="2">{{ $settings->cot_message }}</textarea>
                 </div>
 
                 <div class="mt-3">
-                    <label>Transfer Modal Message</label>
+                    <label>TAX Message</label>
                     <textarea name="tax_message" class="form-control" rows="2">{{ $settings->tax_message }}</textarea>
+                </div>
+
+                <div class="mt-3">
+                    <label>IMF Message</label>
+                    <textarea name="imf_message" class="form-control" rows="2">{{ $settings->imf_message }}</textarea>
                 </div>
 
                 <div class="mt-3">

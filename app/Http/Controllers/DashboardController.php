@@ -17,35 +17,33 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Fetch account type IDs
-        $currentType = AccountType::where('name', 'current')->first();
-        $savingsType = AccountType::where('name', 'savings')->first();
+        // Fetch all user accounts with their account types
+        $userAccounts = UserAccount::with('accountType')
+            ->where('user_id', $user->id)
+            ->get();
 
-        // Get user accounts based on type IDs
-        $currentAccount = $currentType
-            ? UserAccount::where('user_id', $user->id)
-                ->where('account_type_id', $currentType->id)
-                ->first()
-            : null;
+        // Prepare balances dynamically
+        $balances = [];
+        $accountNumbers = [];
+        foreach ($userAccounts as $account) {
+            $typeName = strtolower($account->accountType->name); // e.g., 'savings', 'current', 'loan'
+            $balances[$typeName] = $account->account_amount;
+            $accountNumbers[$typeName] = $account->account_number;
+        }
 
-        $savingsAccount = $savingsType
-            ? UserAccount::where('user_id', $user->id)
-                ->where('account_type_id', $savingsType->id)
-                ->first()
-            : null;
+        // Ensure keys exist even if the user doesn't have certain account types
+        $balances['savings'] = $balances['savings'] ?? 0;
+        $balances['current'] = $balances['current'] ?? 0;
+        $balances['loan'] = $balances['loan'] ?? 0;
 
-        $currentAccountNumber = $currentAccount ? $currentAccount->account_number : 'N/A';
-        $savingsAccountNumber = $savingsAccount ? $savingsAccount->account_number : 'N/A';
+        $accountNumbers['savings'] = $accountNumbers['savings'] ?? 'N/A';
+        $accountNumbers['current'] = $accountNumbers['current'] ?? 'N/A';
+        $accountNumbers['loan'] = $accountNumbers['loan'] ?? 'N/A';
 
-        // Compute balances (adjust according to your logic)
-        $currentBalance = $currentAccount ? $currentAccount->account_amount : 0;
-        $savingsBalance = $savingsAccount ? $savingsAccount->account_amount : 0;
-
-        // Fetch deposits and withdrawals
+        // Total deposits count
         $totalDeposits = Deposit::where('user_id', $user->id)->count();
-        // $totalWithdrawals = Withdrawal::where('user_id', $user->id)->count();
 
-        // Fetch loans if applicable
+        // Loan balance sum
         $loanBalance = Loan::where('user_id', $user->id)
             ->where('status', 'active')
             ->sum('amount');
@@ -56,23 +54,21 @@ class DashboardController extends Controller
             ->take(5)
             ->get(['amount', 'created_at']);
 
-        // Recent activities (if you create the activities table)
+        // Recent activities
         $recentActivities = Activity::where('user_id', $user->id)
             ->latest()
             ->take(5)
             ->get(['description', 'created_at']);
 
-        // Return to dashboard view
         return view('account.user.index', compact(
-            'currentBalance',
-            'totalDeposits',
-            // 'totalWithdrawals',
-            'loanBalance',
-            'savingsBalance',
-            'currentAccountNumber',
-            'savingsAccountNumber',
+            'user',
+            'balances',
+            'accountNumbers',
             'recentDeposits',
-            'recentActivities'
+            'recentActivities',
+            'loanBalance',
+            'totalDeposits',
+            'userAccounts'
         ));
     }
 }

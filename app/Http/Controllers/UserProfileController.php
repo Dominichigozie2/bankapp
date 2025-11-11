@@ -6,8 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Activity; // <-- Add this
 
 class UserProfileController extends Controller
 {
@@ -29,18 +29,23 @@ class UserProfileController extends Controller
         $user->email      = $request->email;
 
         if ($request->hasFile('avatar')) {
-            // store the avatar in storage/app/public/avatars
             $path = $request->file('avatar')->store('avatars', 'public');
 
-            // optionally delete old avatar if exists and it was stored in public disk
             if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
                 Storage::disk('public')->delete($user->avatar);
             }
 
-            $user->avatar = $path; // store the path like 'avatars/abc.jpg'
+            $user->avatar = $path;
         }
 
         $user->save();
+
+        // Log activity
+        Activity::create([
+            'user_id' => $user->id,
+            'type' => 'profile',
+            'description' => 'Updated profile information.',
+        ]);
 
         return response()->json([
             'success' => true,
@@ -61,7 +66,7 @@ class UserProfileController extends Controller
 
         $request->validate([
             'old_password' => 'required|string',
-            'new_password' => 'required|string|min:6|confirmed', // uses new_password_confirmation
+            'new_password' => 'required|string|min:6|confirmed',
         ]);
 
         if (! Hash::check($request->old_password, $user->password)) {
@@ -73,6 +78,13 @@ class UserProfileController extends Controller
 
         $user->password = Hash::make($request->new_password);
         $user->save();
+
+        // Log activity
+        Activity::create([
+            'user_id' => $user->id,
+            'type' => 'security',
+            'description' => 'Changed account password.',
+        ]);
 
         return response()->json([
             'success' => true,
@@ -89,7 +101,6 @@ class UserProfileController extends Controller
             'new_passcode' => 'required|string|min:4|confirmed',
         ]);
 
-        // If you're using plain text (not hashed):
         if ($user->passcode !== $request->old_passcode) {
             return response()->json([
                 'success' => false,
@@ -97,9 +108,15 @@ class UserProfileController extends Controller
             ]);
         }
 
-        // Update and save
         $user->passcode = $request->new_passcode;
-        $user->save(); // <-- this line actually commits it to DB
+        $user->save();
+
+        // Log activity
+        Activity::create([
+            'user_id' => $user->id,
+            'type' => 'security',
+            'description' => 'Changed account passcode.',
+        ]);
 
         return response()->json([
             'success' => true,
@@ -135,6 +152,13 @@ class UserProfileController extends Controller
         $user->addressproof = $address;
         $user->kyc_status = 'pending';
         $user->save();
+
+        // Log activity
+        Activity::create([
+            'user_id' => $user->id,
+            'type' => 'kyc',
+            'description' => 'Submitted KYC documents for verification.',
+        ]);
 
         return response()->json([
             'success' => true,

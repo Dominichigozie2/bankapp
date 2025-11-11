@@ -19,6 +19,10 @@
     </li>
 
     <li class="nav-item">
+      <a href="/account/bank-statement" class="nav-link text-white"><i class="bi bi-clock-history me-2"></i> <span>Bank Statement</span></a>
+    </li>
+
+    <li class="nav-item">
       <a href="/account/cards" class="nav-link text-white"><i class="bi bi-credit-card-2-back me-2"></i> <span>Card</span></a>
     </li>
     <li class="nav-item dropbtn">

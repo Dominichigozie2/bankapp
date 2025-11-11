@@ -289,42 +289,113 @@ class TransferController extends Controller
         return view('account.user.transfer_history', compact('transfers'));
     }
 
-    /** Verify Codes (for International Transfer) */
+
     public function verifyCodes(Request $request)
-    {
-        $user = Auth::user();
-        $settings = AdminSetting::first();
+{
+    $user = Auth::user();
+    $settings = AdminSetting::first();
 
-        $normalize = fn($v) => $v ? strtoupper(trim($v)) : null;
-        $errors = [];
-        $valid = true;
+    $normalize = fn($v) => $v ? strtoupper(trim($v)) : null;
+    $errors = [];
+    $valid = true;
 
-        if ($settings->cot_enabled && $normalize($request->cot_code) !== $normalize($settings->global_cot_code)) {
+    // Validate required codes if enabled
+    if ($settings->cot_enabled) {
+        if (empty($request->cot_code)) {
+            $errors['cot'] = 'COT code is required';
+            $valid = false;
+        } elseif ($normalize($request->cot_code) !== $normalize($settings->global_cot_code)) {
             $errors['cot'] = 'Invalid COT code';
             $valid = false;
         }
-        if ($settings->tax_enabled && $normalize($request->tax_code) !== $normalize($settings->global_tax_code)) {
+    }
+
+    if ($settings->tax_enabled) {
+        if (empty($request->tax_code)) {
+            $errors['tax'] = 'TAX code is required';
+            $valid = false;
+        } elseif ($normalize($request->tax_code) !== $normalize($settings->global_tax_code)) {
             $errors['tax'] = 'Invalid TAX code';
             $valid = false;
         }
-        if ($settings->imf_enabled && $normalize($request->imf_code) !== $normalize($settings->global_imf_code)) {
+    }
+
+    if ($settings->imf_enabled) {
+        if (empty($request->imf_code)) {
+            $errors['imf'] = 'IMF code is required';
+            $valid = false;
+        } elseif ($normalize($request->imf_code) !== $normalize($settings->global_imf_code)) {
             $errors['imf'] = 'Invalid IMF code';
             $valid = false;
         }
-
-        if (!$valid) {
-            return response()->json([
-                'success' => false,
-                'message' => 'One or more codes are incorrect',
-                'errors' => $errors
-            ], 422);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'All required codes verified successfully.'
-        ]);
     }
+
+    if (!$valid) {
+        return response()->json([
+            'success' => false,
+            'message' => 'One or more codes are missing or incorrect.',
+            'errors' => $errors
+        ], 422);
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Code verified successfully.'
+    ]);
+}
+
+/**
+ * Verify a single code (COT, TAX or IMF) — used for sequential modal checks.
+ */
+public function verifySingleCode(Request $request)
+{
+    $request->validate([
+        'code_type' => 'required|in:cot,tax,imf',
+        'code' => 'required|string'
+    ]);
+
+    $type = $request->input('code_type');
+    $code = strtoupper(trim($request->input('code')));
+    $settings = AdminSetting::first();
+
+    $normalize = fn($v) => $v ? strtoupper(trim($v)) : null;
+
+    // Helper to return failure
+    $fail = function($msg = 'Invalid code') {
+        return response()->json(['success' => false, 'message' => $msg], 422);
+    };
+
+    if ($type === 'cot') {
+        if (!$settings->cot_enabled) {
+            return $fail('COT not required');
+        }
+        if ($normalize($code) !== $normalize($settings->global_cot_code)) {
+            return $fail('Invalid COT code');
+        }
+    }
+
+    if ($type === 'tax') {
+        if (!$settings->tax_enabled) {
+            return $fail('TAX not required');
+        }
+        if ($normalize($code) !== $normalize($settings->global_tax_code)) {
+            return $fail('Invalid TAX code');
+        }
+    }
+
+    if ($type === 'imf') {
+        if (!$settings->imf_enabled) {
+            return $fail('IMF not required');
+        }
+        if ($normalize($code) !== $normalize($settings->global_imf_code)) {
+            return $fail('Invalid IMF code');
+        }
+    }
+
+    return response()->json(['success' => true, 'message' => strtoupper($type) . ' verified']);
+}
+
+
 
     /** Transfer Invoice */
     public function invoice($id)

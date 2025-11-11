@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Mail\TicketCreated;
 use App\Mail\TicketReply;
+use App\Models\Activity; // <-- Add this
 
 class TicketController extends Controller
 {
@@ -65,6 +66,13 @@ class TicketController extends Controller
             'user_id' => $user->id,
             'message' => $validated['details'],
             'sender_type' => 'user',
+        ]);
+
+        // Log activity
+        Activity::create([
+            'user_id' => $user->id,
+            'type' => 'ticket',
+            'description' => "Created a new ticket ({$ticket->ticket_number})",
         ]);
 
         // Send notification emails
@@ -147,6 +155,13 @@ class TicketController extends Controller
 
         $ticket->update(['status' => 'open']);
 
+        // Log activity
+        Activity::create([
+            'user_id' => Auth::id(),
+            'type' => 'ticket',
+            'description' => "Replied to ticket ({$ticket->ticket_number})",
+        ]);
+
         try {
             Mail::to(config('mail.admin_email'))->send(new TicketReply($ticket, $message));
             Mail::to($ticket->user->email)->send(new TicketReply($ticket, $message));
@@ -170,6 +185,13 @@ class TicketController extends Controller
         }
 
         $ticket->update(['status' => 'closed']);
+
+        // Log activity
+        Activity::create([
+            'user_id' => Auth::id(),
+            'type' => 'ticket',
+            'description' => "Closed ticket ({$ticket->ticket_number})",
+        ]);
 
         return response()->json([
             'status' => 'success',
