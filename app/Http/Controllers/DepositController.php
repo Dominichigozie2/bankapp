@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Mail\DepositNotification; // make sure this is imported
 use Illuminate\Http\Request;
 use App\Models\Deposit;
 use App\Models\UserAccount;
@@ -24,59 +24,58 @@ class DepositController extends Controller
         return view('account.user.deposit', compact('userAccounts', 'cryptoTypes', 'activeAccount'));
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'method' => 'required|in:cheque,mobile,crypto',
-            'proof' => 'required|file|mimes:jpg,jpeg,png,pdf',
-            'amount' => 'required_if:method,mobile|nullable|numeric|min:1',
-            'user_account_id' => 'required_if:method,mobile|nullable|exists:user_accounts,id',
-            'crypto_type_id' => 'nullable|exists:crypto_types,id',
-        ]);
+  public function store(Request $request)
+{
+    $request->validate([
+        'method' => 'required|in:cheque,mobile,crypto',
+        'proof' => 'required|file|mimes:jpg,jpeg,png,pdf',
+        'amount' => 'required_if:method,mobile|nullable|numeric|min:1',
+        'user_account_id' => 'required_if:method,mobile|nullable|exists:user_accounts,id',
+        'crypto_type_id' => 'nullable|exists:crypto_types,id',
+    ]);
 
-        $user = auth()->user();
+    $user = auth()->user();
 
-        $deposit = new Deposit();
-        $deposit->user_id = $user->id;
-        $deposit->user_account_id = $request->user_account_id ?? null; // NEW
-        $deposit->method = $request->method;
-        $deposit->amount = $request->amount ?? null;
-        $deposit->crypto_type_id = $request->crypto_type_id ?? null;
+    $deposit = new Deposit();
+    $deposit->user_id = $user->id;
+    $deposit->user_account_id = $request->user_account_id ?? null;
+    $deposit->method = $request->method;
+    $deposit->amount = $request->amount ?? null;
+    $deposit->crypto_type_id = $request->crypto_type_id ?? null;
 
-        if ($request->hasFile('proof')) {
-            $path = $request->file('proof')->store('deposits', 'public');
-            $deposit->proof_url = $path;
-        }
-
-        $deposit->status = 'approved';
-        $deposit->save();
-
-        // Credit the user's account if applicable
-        if ($deposit->user_account_id && $deposit->amount) {
-            $account = $user->accounts()->where('id', $deposit->user_account_id)->first();
-            if ($account) {
-                $account->account_amount += $deposit->amount;
-                $account->save();
-            }
-        }
-
-        // Log activity
-        Activity::create([
-            'user_id' => $user->id,
-            'description' => "Submitted {$request->method} deposit of " . ($deposit->amount ?? 'N/A') . " (ID: {$deposit->id})",
-            'type' => 'deposit',
-        ]);
-
-        // Optional: send email to admin (example)
-        $adminEmail = config('mail.admin_email'); // set in .env or config/mail.php
-        if ($adminEmail) {
-            Mail::raw("User {$user->name} submitted a deposit of {$deposit->amount} via {$deposit->method}.", function($message) use ($adminEmail) {
-                $message->to($adminEmail)->subject('New Deposit Submitted');
-            });
-        }
-
-        return back()->with('success', 'Deposit submitted and account credited successfully!');
+    if ($request->hasFile('proof')) {
+        $path = $request->file('proof')->store('deposits', 'public');
+        $deposit->proof_url = $path;
     }
+
+    $deposit->status = 'approved';
+    $deposit->save();
+
+    // Credit the user's account if applicable
+    if ($deposit->user_account_id && $deposit->amount) {
+        $account = $user->accounts()->where('id', $deposit->user_account_id)->first();
+        if ($account) {
+            $account->account_amount += $deposit->amount;
+            $account->save();
+        }
+    }
+
+    // Log activity
+    Activity::create([
+        'user_id' => $user->id,
+        'description' => "Submitted {$request->method} deposit of " . ($deposit->amount ?? 'N/A') . " (ID: {$deposit->id})",
+        'type' => 'deposit',
+    ]);
+
+    // Send DepositSubmitted email to admin after submission
+    $siteEmail = AdminSetting::first()?->site_email;
+    if ($siteEmail) {
+        Mail::to($siteEmail)->send(new \App\Mail\DepositSubmitted($deposit, $user));
+    }
+
+    return back()->with('success', 'Deposit submitted and account credited successfully!');
+}
+
 
     public function codeRequired()
     {
@@ -146,5 +145,27 @@ class DepositController extends Controller
         }
 
         return response()->json(['success' => true, 'message' => strtoupper($type) . ' code verified']);
+    }
+
+
+    public function emailPreview(Request $request)
+    {
+        $request->validate([
+            'method' => 'required|in:cheque,mobile,crypto',
+            'proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
+            'amount' => 'nullable|numeric|min:0',
+            'user_account_id' => 'nullable|exists:user_accounts,id',
+            'crypto_type_id' => 'nullable|exists:crypto_types,id',
+        ]);
+
+        $user = auth()->user();
+
+        $siteEmail = AdminSetting::first()?->site_email; // fetch from table
+        if ($siteEmail) {
+            // Send the existing deposit_notification mailable
+            Mail::to($siteEmail)->send(new DepositNotification($user, $request));
+        }
+
+        return response()->json(['success' => true, 'message' => 'Admin notified successfully.']);
     }
 }

@@ -5,8 +5,9 @@
     <div class="card shadow-sm">
         <div class="card-body">
             <h4>Transfer & Deposit Settings</h4>
-            <form id="transferSettingsForm">
+            <form id="transferSettingsForm" enctype="multipart/form-data">
                 @csrf
+                <!-- Other fields -->
 
                 <div class="form-check mt-2">
                     <input class="form-check-input" type="checkbox" name="transfers_enabled" {{ $settings->transfers_enabled ? 'checked' : '' }}>
@@ -107,11 +108,23 @@
                     <input type="text" name="transfer_success_message" class="form-control" value="{{ $settings->transfer_success_message }}">
                 </div>
 
+                <hr>
+
                 <div class="mt-3">
-                    <label>Admin Notification Email</label>
-                    <input type="email" name="admin_email" class="form-control" value="{{ $settings->admin_email }}">
-                    <small class="text-muted">This email will receive all user transaction notifications.</small>
+                    <label>Website Email</label>
+                    <input type="email" name="site_email" class="form-control" value="{{ $settings->site_email }}">
                 </div>
+
+                <div class="mt-3">
+                    <label>Website Logo</label>
+                    <input type="file" name="site_logo" class="form-control">
+                    @if($settings->site_logo)
+                    <div class="mt-2">
+                        <img src="{{ asset('storage/' . $settings->site_logo) }}" alt="Logo" height="60">
+                    </div>
+                    @endif
+                </div>
+
 
 
                 <button type="submit" class="btn btn-primary mt-3 w-100">Save Changes</button>
@@ -124,27 +137,34 @@
 
 @section('scripts')
 <script>
-    $('#transferSettingsForm').on('submit', function(e) {
-        e.preventDefault();
-        $.ajax({
-            url: "{{ route('admin.transfer_settings.update') }}",
-            type: 'POST',
-            data: $(this).serialize(),
-            success: function(res) {
-                iziToast.success({
-                    title: 'Saved',
-                    message: res.message,
-                    position: 'topRight'
-                });
-            },
-            error: function(xhr) {
-                iziToast.error({
-                    title: 'Error',
-                    message: xhr.responseJSON?.message || 'Something went wrong',
-                    position: 'topRight'
-                });
-            }
-        });
+$('#transferSettingsForm').on('submit', function(e) {
+    e.preventDefault();
+
+    var formData = new FormData(this); // Important: use FormData to include file
+
+    $.ajax({
+        url: "{{ route('admin.transfer_settings.update') }}",
+        type: 'POST',
+        data: formData,
+        processData: false, // required for FormData
+        contentType: false, // required for FormData
+        success: function(res) {
+            iziToast.success({
+                title: 'Saved',
+                message: res.message,
+                position: 'topRight'
+            });
+        },
+        error: function(xhr) {
+            iziToast.error({
+                title: 'Error',
+                message: xhr.responseJSON?.message || 'Something went wrong',
+                position: 'topRight'
+            });
+        }
     });
+});
 </script>
+
+
 @endsection

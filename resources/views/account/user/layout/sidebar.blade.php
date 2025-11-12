@@ -1,6 +1,6 @@
 <div class="sidebar d-flex flex-column" id="sidebar">
   <div class="logo d-flex justify-content-between align-items-center px-3 py-2">
-    <img src="/assets/images/logo-sm.svg" width="30px" alt="">
+    <img src="{{ asset('storage/' . $settings->site_logo) }}" alt="Logo" height="30">
     <h4 class="m-0"><span>AdminPanel</span></h4>
     <button class="btn-close btn-close-white" id="closeSidebar"></button>
   </div>

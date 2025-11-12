@@ -73,12 +73,24 @@ class DashboardController extends Controller
             ->values();
 
         // Convert to arrays for the view
-        $recentTransactions = $recentTransactions->map(fn($item) => [
-            'method' => $item->method ?? ($item->type ?? 'unknown'),
+       $recentTransactions = $recentTransactions->map(function ($item) {
+    if ($item instanceof Transfer) {
+        return [
+            'method' => $item->method ?? 'transfer_local', // make sure it matches Blade
             'amount' => $item->amount,
             'created_at' => $item->created_at,
-            'type' => $item instanceof Deposit ? 'deposit' : ($item instanceof Transfer ? 'transfer' : 'loan'),
-        ]);
+            'type' => 'transfer',
+        ];
+    }
+
+    return [
+        'method' => $item->method ?? ($item->type ?? 'unknown'),
+        'amount' => $item->amount,
+        'created_at' => $item->created_at,
+        'type' => $item instanceof Deposit ? 'deposit' : 'loan',
+    ];
+});
+
 
         // Recent activities
         $recentActivities = Activity::where('user_id', $user->id)

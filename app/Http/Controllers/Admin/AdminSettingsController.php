@@ -18,6 +18,7 @@ class AdminSettingsController extends Controller
     {
         $settings = AdminSetting::first();
 
+        // Validate all fields; use `mimes` for site_logo to allow SVG
         $validated = $request->validate([
             'service_charge' => 'required|numeric|min:0',
             'max_transfer_amount' => 'required|numeric|min:0',
@@ -30,22 +31,33 @@ class AdminSettingsController extends Controller
             'imf_message' => 'nullable|string',
             'transfer_instruction' => 'nullable|string',
             'deposit_instruction' => 'nullable|string',
-
-            // ✅ Add new ones
             'cot_dep_message' => 'nullable|string',
             'tax_dep_message' => 'nullable|string',
             'imf_dep_message' => 'nullable|string',
+            'site_email' => 'nullable|email',
+            'site_logo' => 'nullable|mimes:jpg,jpeg,png,svg|max:2048', // allow SVG
         ]);
 
-        // handle checkboxes
+        // Handle checkboxes
         $validated['cot_enabled'] = $request->has('cot_enabled');
         $validated['tax_enabled'] = $request->has('tax_enabled');
         $validated['imf_enabled'] = $request->has('imf_enabled');
         $validated['transfers_enabled'] = $request->has('transfers_enabled');
 
-        // ✅ Update all fields
+        // Handle logo upload
+        if ($request->hasFile('site_logo')) {
+            $file = $request->file('site_logo');
+            $fileName = 'logo_' . time() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('logos', $fileName, 'public');
+            $validated['site_logo'] = $path;
+        }
+
         $settings->update($validated);
 
-        return response()->json(['success' => true, 'message' => 'Settings updated successfully!']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Settings updated successfully!',
+            'logo_path' => $validated['site_logo'] ?? null
+        ]);
     }
 }

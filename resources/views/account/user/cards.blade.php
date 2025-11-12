@@ -147,7 +147,8 @@
         {{-- Front --}}
         <div class="card-front">
           <div class="card-header">
-            <img src="/assets/images/logo-sm.svg" alt="Logo" class="card-logo">
+            
+            <img src="{{ asset('storage/' . $settings->site_logo) }}" alt="Logo" class="card-logo">
             <div class="card-type text-end">
               <div>Debit Card</div>
               <img src="{{ asset('assets/images/visa.png') }}" alt="Visa" width="60">

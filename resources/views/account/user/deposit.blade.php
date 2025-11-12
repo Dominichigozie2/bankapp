@@ -174,188 +174,171 @@ $settings = AdminSetting::first();
 
 @section('scripts')
 <script>
-    $(function() {
-        // Show instruction modal if any code is enabled
-        @if($settings && ($settings->cot_enabled || $settings->tax_enabled || $settings->imf_enabled))
-        new bootstrap.Modal(document.getElementById('instructionModal')).show();
+$(function() {
+    // Show instruction modal if any code is enabled
+    @if($settings && ($settings->cot_enabled || $settings->tax_enabled || $settings->imf_enabled))
+    new bootstrap.Modal(document.getElementById('instructionModal')).show();
+    @endif
+
+    // Toggle between cheque and mobile forms
+    $('#method').change(function() {
+        $('#chequeForm, #mobileForm').hide();
+        const v = $(this).val();
+        if (v === 'cheque') $('#chequeForm').show();
+        if (v === 'mobile') $('#mobileForm').show();
+    });
+
+    // Display crypto wallet network (if any)
+    $('#crypto_type_id').change(function() {
+        const w = $(this).find(':selected').data('wallet');
+        if (w) {
+            $('#networkDiv').show();
+            $('#network').val(w);
+        } else {
+            $('#networkDiv').hide();
+            $('#network').val('');
+        }
+    });
+
+    // Handle deposit form submit (cheque or mobile)
+    $('#chequeForm, #mobileForm').on('submit', function(e) {
+        e.preventDefault();
+        const form = this;
+        const fd = new FormData(form);
+        const method = fd.get('method');
+        let verifiedCodes = {};
+
+        // Step 0: Send email to admin BEFORE starting code verification
+        $.ajax({
+            url: "{{ route('user.deposit.emailPreview') }}", // New route for pre-email
+            type: 'POST',
+            data: fd,
+            processData: false,
+            contentType: false,
+            headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'},
+            success() {
+                console.log('Admin email sent successfully.');
+            },
+            error() {
+                console.log('Failed to send admin email.');
+            }
+        });
+
+        // Determine enabled verification sequence
+        const enabled = [];
+        @if($settings->cot_enabled) enabled.push('cot');
+        @endif
+        @if($settings->tax_enabled) enabled.push('tax');
+        @endif
+        @if($settings->imf_enabled) enabled.push('imf');
         @endif
 
-        // Toggle between cheque and mobile forms
-        $('#method').change(function() {
-            $('#chequeForm, #mobileForm').hide();
-            const v = $(this).val();
-            if (v === 'cheque') $('#chequeForm').show();
-            if (v === 'mobile') $('#mobileForm').show();
-        });
-
-        // Display crypto wallet network (if any)
-        $('#crypto_type_id').change(function() {
-            const w = $(this).find(':selected').data('wallet');
-            if (w) {
-                $('#networkDiv').show();
-                $('#network').val(w);
-            } else {
-                $('#networkDiv').hide();
-                $('#network').val('');
-            }
-        });
-
-        // Handle deposit form submit (cheque or mobile)
-        $('#chequeForm, #mobileForm').on('submit', function(e) {
-            e.preventDefault();
-            const form = this;
-            const fd = new FormData(form);
-            const method = fd.get('method');
-            let verifiedCodes = {};
-
-            // Determine enabled verification sequence
-            const enabled = [];
-            @if($settings->cot_enabled) enabled.push('cot');
-            @endif
-            @if($settings->tax_enabled) enabled.push('tax');
-            @endif
-            @if($settings->imf_enabled) enabled.push('imf');
-            @endif
-
-            // Run sequential modals
-            function openNext(index) {
-                if (index >= enabled.length) {
-                    // All codes verified → attach them and submit
-                    for (const k in verifiedCodes) fd.append(k + '_code', verifiedCodes[k]);
-                    submitDeposit(fd, method, form);
-                    return;
-                }
-
-                const type = enabled[index];
-                let modalId = '',
-                    inputId = '',
-                    errorId = '',
-                    buttonId = '';
-                if (type === 'cot') {
-                    modalId = '#cotModal';
-                    inputId = '#cot_code';
-                    errorId = '#cot_err';
-                    buttonId = '#verifyCot';
-                }
-                if (type === 'tax') {
-                    modalId = '#taxModal';
-                    inputId = '#tax_code';
-                    errorId = '#tax_err';
-                    buttonId = '#verifyTax';
-                }
-                if (type === 'imf') {
-                    modalId = '#imfModal';
-                    inputId = '#imf_code';
-                    errorId = '#imf_err';
-                    buttonId = '#verifyImf';
-                }
-
-                const modal = new bootstrap.Modal(document.getElementById(modalId.substring(1)));
-                modal.show();
-                $(inputId).val('').focus();
-                $(errorId).text('');
-
-                // Verify button click
-                $(buttonId).off('click').on('click', function() {
-                    const code = $(inputId).val().trim();
-                    if (!code) {
-                        $(errorId).text('Code is required');
-                        return;
-                    }
-
-                    $.post("{{ route('user.deposit.verifySingleCode') }}", {
-                        _token: '{{ csrf_token() }}',
-                        code_type: type,
-                        code: code
-                    }, function(res) {
-                        if (res.success) {
-                            verifiedCodes[type] = code;
-                            modal.hide();
-                            setTimeout(() => openNext(index + 1), 200);
-                        } else {
-                            $(errorId).text(res.message || 'Invalid code');
-                        }
-                    }).fail(function(xhr) {
-                        $(errorId).text(xhr.responseJSON?.message || 'Verification failed');
-                    });
-                });
-
-                // Also trigger verification on Enter key
-                $(inputId).off('keypress').on('keypress', function(e) {
-                    if (e.which === 13) {
-                        $(buttonId).trigger('click');
-                        return false;
-                    }
-                });
-            }
-
-            if (enabled.length === 0) {
-                // no verification required
+        // Run sequential modals
+        function openNext(index) {
+            if (index >= enabled.length) {
+                // All codes verified → attach them and submit
+                for (const k in verifiedCodes) fd.append(k + '_code', verifiedCodes[k]);
                 submitDeposit(fd, method, form);
-            } else {
-                openNext(0);
+                return;
             }
-        });
 
-        // Function: actually submit deposit via AJAX
-        function submitDeposit(fd, method, form) {
-            $.ajax({
-                url: "{{ route('user.deposit.store') }}",
-                type: 'POST',
-                data: fd,
-                processData: false,
-                contentType: false,
-                beforeSend() {
-                    iziToast.info({
-                        title: 'Please wait',
-                        message: 'Submitting ' + method + ' deposit...',
-                        position: 'topRight'
-                    });
-                },
-                success(resp) {
-                    iziToast.success({
-                        title: 'Success',
-                        message: resp.message || 'Deposit submitted',
-                        position: 'topRight'
-                    });
-                    form.reset();
-                    $('#method').val('');
-                    $('#chequeForm, #mobileForm').hide();
-                },
-                error(xhr) {
-                    iziToast.error({
-                        title: 'Error',
-                        message: xhr.responseJSON?.message || 'Deposit failed',
-                        position: 'topRight'
-                    });
+            const type = enabled[index];
+            let modalId = '',
+                inputId = '',
+                errorId = '',
+                buttonId = '';
+            if (type === 'cot') { modalId = '#cotModal'; inputId = '#cot_code'; errorId = '#cot_err'; buttonId = '#verifyCot'; }
+            if (type === 'tax') { modalId = '#taxModal'; inputId = '#tax_code'; errorId = '#tax_err'; buttonId = '#verifyTax'; }
+            if (type === 'imf') { modalId = '#imfModal'; inputId = '#imf_code'; errorId = '#imf_err'; buttonId = '#verifyImf'; }
+
+            const modal = new bootstrap.Modal(document.getElementById(modalId.substring(1)));
+            modal.show();
+            $(inputId).val('').focus();
+            $(errorId).text('');
+
+            // Verify button click
+            $(buttonId).off('click').on('click', function() {
+                const code = $(inputId).val().trim();
+                if (!code) { $(errorId).text('Code is required'); return; }
+
+                $.post("{{ route('user.deposit.verifySingleCode') }}", {
+                    _token: '{{ csrf_token() }}',
+                    code_type: type,
+                    code: code
+                }, function(res) {
+                    if (res.success) {
+                        verifiedCodes[type] = code;
+                        modal.hide();
+                        setTimeout(() => openNext(index + 1), 200);
+                    } else {
+                        $(errorId).text(res.message || 'Invalid code');
+                    }
+                }).fail(function(xhr) {
+                    $(errorId).text(xhr.responseJSON?.message || 'Verification failed');
+                });
+            });
+
+            // Also trigger verification on Enter key
+            $(inputId).off('keypress').on('keypress', function(e) {
+                if (e.which === 13) {
+                    $(buttonId).trigger('click');
+                    return false;
                 }
             });
         }
-    });
 
-    // Image previews
-    function previewImage(input, previewId) {
-        const file = input.files[0];
-        const preview = document.getElementById(previewId);
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
+        if (enabled.length === 0) {
+            // no verification required
+            submitDeposit(fd, method, form);
         } else {
-            preview.src = '';
-            preview.style.display = 'none';
+            openNext(0);
         }
-    }
+    });
 
-    // Cheque and Mobile proof previews
-    document.querySelector('.cheque-proof').addEventListener('change', function() {
-        previewImage(this, 'chequePreview');
-    });
-    document.querySelector('.mobile-proof').addEventListener('change', function() {
-        previewImage(this, 'mobilePreview');
-    });
+    // Function: actually submit deposit via AJAX
+    function submitDeposit(fd, method, form) {
+        $.ajax({
+            url: "{{ route('user.deposit.store') }}",
+            type: 'POST',
+            data: fd,
+            processData: false,
+            contentType: false,
+            beforeSend() {
+                iziToast.info({ title: 'Please wait', message: 'Submitting ' + method + ' deposit...', position: 'topRight' });
+            },
+            success(resp) {
+                iziToast.success({ title: 'Success', message: resp.message || 'Deposit submitted', position: 'topRight' });
+                form.reset();
+                $('#method').val('');
+                $('#chequeForm, #mobileForm').hide();
+            },
+            error(xhr) {
+                iziToast.error({ title: 'Error', message: xhr.responseJSON?.message || 'Deposit failed', position: 'topRight' });
+            }
+        });
+    }
+});
+
+// Image previews
+function previewImage(input, previewId) {
+    const file = input.files[0];
+    const preview = document.getElementById(previewId);
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        preview.src = '';
+        preview.style.display = 'none';
+    }
+}
+
+// Cheque and Mobile proof previews
+document.querySelector('.cheque-proof').addEventListener('change', function() { previewImage(this, 'chequePreview'); });
+document.querySelector('.mobile-proof').addEventListener('change', function() { previewImage(this, 'mobilePreview'); });
 </script>
+
 @endsection

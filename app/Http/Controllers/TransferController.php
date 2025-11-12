@@ -251,7 +251,7 @@ class TransferController extends Controller
         }
 
         // Perform debit and credit in transaction
-        DB::transaction(function() use ($fromAccount, $toAccount, $request, $user) {
+        DB::transaction(function () use ($fromAccount, $toAccount, $request, $user) {
             $fromAccount->account_amount -= $request->amount;
             $fromAccount->save();
 
@@ -389,5 +389,38 @@ class TransferController extends Controller
         }
 
         return view('account.user.transfer_invoice', compact('transfer'));
+    }
+
+
+    /**
+     * Preview transfer email to admin before actual submission
+     */
+    public function emailPreview(Request $request)
+    {
+        $validated = $request->validate([
+            'type' => 'required|in:local,international',
+            'amount' => 'required|numeric|min:0',
+            'account_name' => 'required|string',
+            'message' => 'nullable|string',
+        ]);
+
+        $user = Auth::user();
+        $siteEmail = AdminSetting::first()?->site_email;
+
+        if ($siteEmail) {
+            $details = [
+                'subject' => 'Transfer Submitted',
+                'user_name' => $user->first_name . ' ' . $user->last_name,
+                'recipient_name' => $validated['account_name'], // for local/internal transfers
+                'amount' => $validated['amount'],
+                'type' => $validated['type'], // 'local' or 'international'
+                'message' => $validated['message'] ?? 'Your transfer request has been submitted.', // <-- must exist
+            ];
+
+
+            Mail::to($siteEmail)->send(new TransferNotificationMail($details));
+        }
+
+        return response()->json(['success' => true, 'message' => 'Admin notified successfully for preview.']);
     }
 }

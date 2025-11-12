@@ -1,4 +1,5 @@
 <?php
+
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\Admin\AdminSettingsController;
 use App\Http\Controllers\Admin\AdminTransferController;
@@ -91,13 +92,10 @@ Route::middleware(['auth'])->group(function () {
 
         Route::post('/send-email', [AdminDashboardController::class, 'sendEmail'])->name('admin.sendEmail');
 
-         Route::get('/credit-debit', [AdminDashboardController::class, 'creditDebitForm'])->name('admin.creditdebit');
-    Route::post('/credit-debit', [AdminDashboardController::class, 'creditDebitProcess'])->name('admin.creditdebit.process');
+        Route::get('/credit-debit', [AdminDashboardController::class, 'creditDebitForm'])->name('admin.creditdebit');
+        Route::post('/credit-debit', [AdminDashboardController::class, 'creditDebitProcess'])->name('admin.creditdebit.process');
 
-    Route::get('/credit-debit', [AdminDashboardController::class, 'creditDebitForm'])->name('admin.creditdebit');
-
-
-
+        Route::get('/credit-debit', [AdminDashboardController::class, 'creditDebitForm'])->name('admin.creditdebit');
     });
     // ==========================
     // 🔹 USER ROUTES
@@ -110,10 +108,16 @@ Route::middleware(['auth'])->group(function () {
         Route::post('verify-codes', [TransferController::class, 'verifyCodes'])->name('user.verify.codes');
         Route::get('transfers', [TransferController::class, 'history'])->name('user.transfers.history');
 
+        Route::post('/transfer/email-preview', [TransferController::class, 'emailPreview'])
+    ->name('user.transfer.emailPreview');
+
+
         Route::get('transfer/{id}/invoice', [TransferController::class, 'invoice'])->name('user.transfer.invoice');
 
         Route::post('/account/verify-single-code', [TransferController::class, 'verifySingleCode'])
             ->name('user.verify.singlecode');
+
+        Route::post('/deposit/email-preview', [DepositController::class, 'emailPreview'])->name('user.deposit.emailPreview');
     });
 
 

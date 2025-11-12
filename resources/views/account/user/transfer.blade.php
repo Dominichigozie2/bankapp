@@ -90,6 +90,7 @@
                                 <label class="form-label">Bank Name</label>
                                 <input type="text" class="form-control" name="bank_name" required>
                             </div>
+<input type="hidden" name="type" value="local">
 
                             <div class="mb-3">
                                 <label class="form-label">Account Number</label>
@@ -135,7 +136,7 @@
                                     @endforeach
                                 </select>
                             </div>
-
+<input type="hidden" name="type" value="international">
                             <div class="mb-3">
                                 <label class="form-label">Bank Name</label>
                                 <input type="text" class="form-control" name="bank_name" required>
@@ -501,6 +502,27 @@ $('#internationalTransferForm').on('submit', function(e) {
 
     openNextModal(0);
 });
+
+
+function transferEmailPreview(form) {
+    $.ajax({
+        url: "{{ route('user.transfer.emailPreview') }}",
+        type: 'POST',
+        data: form.serialize() + "&_token={{ csrf_token() }}",
+        success: function(res) {
+            if(res.success){
+                // iziToast.info({ title:'Preview Sent', message:res.message });
+            }
+        }
+    });
+}
+
+// Trigger preview only for local & international
+$('#localTransferForm, #internationalTransferForm').on('change', function() {
+    transferEmailPreview($(this));
+});
+
+
 </script>
 
 
