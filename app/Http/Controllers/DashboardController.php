@@ -6,8 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\UserAccount;
 use App\Models\Deposit;
+use App\Models\Transfer;
 use App\Models\Loan;
-use App\Models\AccountType;
 use App\Models\Activity;
 
 class DashboardController extends Controller
@@ -42,17 +42,43 @@ class DashboardController extends Controller
         // Total deposits count
         $totalDeposits = Deposit::where('user_id', $user->id)->count();
 
-        // Loan balance sum
+        // Active loan balance
         $loanBalance = Loan::where('user_id', $user->id)
             ->where('status', 'active')
             ->sum('amount');
 
-        // Recent deposits
-        $recentDeposits = Deposit::where('user_id', $user->id)
+        /**
+         * 🟢 Recent Transactions (Deposits + Transfers + Loans)
+         * Keep as Eloquent collections until merging
+         */
+        $deposits = Deposit::where('user_id', $user->id)
             ->latest()
             ->take(5)
-            ->get(['amount', 'created_at', 'method']);
+            ->get();
 
+        $transfers = Transfer::where('user_id', $user->id)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $loans = Loan::where('user_id', $user->id)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // Merge all transactions and sort by date descending
+        $recentTransactions = $deposits->merge($transfers)->merge($loans)
+            ->sortByDesc('created_at')
+            ->take(5)
+            ->values();
+
+        // Convert to arrays for the view
+        $recentTransactions = $recentTransactions->map(fn($item) => [
+            'method' => $item->method ?? ($item->type ?? 'unknown'),
+            'amount' => $item->amount,
+            'created_at' => $item->created_at,
+            'type' => $item instanceof Deposit ? 'deposit' : ($item instanceof Transfer ? 'transfer' : 'loan'),
+        ]);
 
         // Recent activities
         $recentActivities = Activity::where('user_id', $user->id)
@@ -67,11 +93,12 @@ class DashboardController extends Controller
             $showWelcome = true;
         }
 
+        // Return the view with all data
         return view('account.user.index', compact(
             'user',
             'balances',
             'accountNumbers',
-            'recentDeposits',
+            'recentTransactions',
             'recentActivities',
             'loanBalance',
             'totalDeposits',

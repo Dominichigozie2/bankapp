@@ -27,38 +27,26 @@
                 </li>
 
                 <!-- sample items -->
+                 @forelse($recentActivities as $activity)
                 <li>
-                    <a class="dropdown-item d-flex align-items-start" href="#">
-                        <div class="flex-shrink-0 me-2"><i class="bi bi-wallet2 fs-4 text-primary"></i></div>
+                    <a class="dropdown-item d-flex align-items-start" href="/account/activities">
+                        <div class="flex-shrink-0 me-2">
+                            <i class="@if($activity->type == 'deposit' || $activity->type == 'self_credit') bi bi-arrow-down-circle text-success
+                @elseif($activity->type == 'loan') bi bi-wallet2 text-primary
+                @elseif($activity->type == 'profile') bi bi-person-circle text-secondary
+                @elseif($activity->type == 'login') bi bi-box-arrow-in-right text-info
+                @else bi bi-arrow-up-circle text-danger @endif
+                fs-5 me-3 text-primary"></i></div>
                         <div class="flex-grow-1">
-                            <div class="small text-muted">Deposits</div>
-                            <div>New deposit awaiting approval — #DEP-1023</div>
+                            <div class="small text-muted">{{ $activity->type }}</div>
+                            <div>{{ $activity->description }}</div>
                             <div class="small text-muted">2m ago</div>
                         </div>
                     </a>
                 </li>
-
-                <li>
-                    <a class="dropdown-item d-flex align-items-start" href="#">
-                        <div class="flex-shrink-0 me-2"><i class="bi bi-person-check fs-4 text-success"></i></div>
-                        <div class="flex-grow-1">
-                            <div class="small text-muted">KYC</div>
-                            <div>User John Doe submitted KYC</div>
-                            <div class="small text-muted">1h ago</div>
-                        </div>
-                    </a>
-                </li>
-
-                <li>
-                    <a class="dropdown-item d-flex align-items-start" href="#">
-                        <div class="flex-shrink-0 me-2"><i class="bi bi-exclamation-triangle fs-4 text-warning"></i></div>
-                        <div class="flex-grow-1">
-                            <div class="small text-muted">System</div>
-                            <div>Scheduled maintenance at 02:00 UTC</div>
-                            <div class="small text-muted">6h ago</div>
-                        </div>
-                    </a>
-                </li>
+                @empty
+                    <li class="list-group-item text-center text-muted">No recent activities</li>
+                    @endforelse
 
                 <li>
                     <hr class="dropdown-divider">

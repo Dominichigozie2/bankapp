@@ -17,7 +17,7 @@ class AdminSetting extends Model
         'max_transfer_amount',
         'transfer_success_message',
 
-        // ✅ Newly added fields
+        // ✅ Existing fields
         'global_cot_code',
         'global_tax_code',
         'global_imf_code',
@@ -26,6 +26,11 @@ class AdminSetting extends Model
         'imf_message',
         'transfer_instruction',
         'deposit_instruction',
+
+        // ✅ Newly added deposit message fields
+        'cot_dep_message',
+        'tax_dep_message',
+        'imf_dep_message',
     ];
 
     protected $casts = [

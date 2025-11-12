@@ -30,14 +30,20 @@ class AdminSettingsController extends Controller
             'imf_message' => 'nullable|string',
             'transfer_instruction' => 'nullable|string',
             'deposit_instruction' => 'nullable|string',
+
+            // ✅ Add new ones
+            'cot_dep_message' => 'nullable|string',
+            'tax_dep_message' => 'nullable|string',
+            'imf_dep_message' => 'nullable|string',
         ]);
 
-        // Handle checkboxes
+        // handle checkboxes
         $validated['cot_enabled'] = $request->has('cot_enabled');
         $validated['tax_enabled'] = $request->has('tax_enabled');
         $validated['imf_enabled'] = $request->has('imf_enabled');
         $validated['transfers_enabled'] = $request->has('transfers_enabled');
 
+        // ✅ Update all fields
         $settings->update($validated);
 
         return response()->json(['success' => true, 'message' => 'Settings updated successfully!']);

@@ -11,9 +11,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
 
 class TransferController extends Controller
 {
+    /** Show transfer page */
     public function index()
     {
         $user = Auth::user();
@@ -54,9 +56,17 @@ class TransferController extends Controller
         $serviceCharge = $settings->service_charge ?? 0;
         $totalRequired = $validated['amount'] + $serviceCharge;
 
-        if (($user->balance ?? 0) < $totalRequired) {
-            return response()->json(['success' => false, 'message' => 'Insufficient balance.'], 422);
+        $fromAccount = UserAccount::where('id', $validated['account'])
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$fromAccount || $fromAccount->account_amount < $totalRequired) {
+            return response()->json(['success' => false, 'message' => 'Insufficient account balance.'], 422);
         }
+
+        // Deduct from account
+        $fromAccount->account_amount -= $totalRequired;
+        $fromAccount->save();
 
         $transfer = Transfer::create([
             'user_id' => $user->id,
@@ -74,14 +84,12 @@ class TransferController extends Controller
             ],
         ]);
 
-        // Log activity
         Activity::create([
             'user_id' => $user->id,
             'description' => "Submitted local transfer of {$validated['amount']} (ref: {$transfer->reference})",
             'type' => 'transfer',
         ]);
 
-        // Send notification email
         $details = [
             'subject' => 'Local Transfer Submitted',
             'user_name' => $user->first_name . ' ' . $user->last_name,
@@ -128,6 +136,17 @@ class TransferController extends Controller
             return response()->json(['success' => false, 'message' => 'Amount exceeds maximum transfer limit.'], 422);
         }
 
+        $serviceCharge = $settings->service_charge ?? 0;
+        $totalRequired = $validated['amount'] + $serviceCharge;
+
+        $fromAccount = UserAccount::where('id', $validated['account'])
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$fromAccount || $fromAccount->account_amount < $totalRequired) {
+            return response()->json(['success' => false, 'message' => 'Insufficient account balance.'], 422);
+        }
+
         // Validate codes if required
         if (empty($validated['codes_verified'])) {
             $normalize = fn($v) => $v ? strtoupper(trim($v)) : null;
@@ -156,12 +175,9 @@ class TransferController extends Controller
             }
         }
 
-        $serviceCharge = $settings->service_charge ?? 0;
-        $totalRequired = (float)$validated['amount'] + (float)$serviceCharge;
-
-        if (($user->balance ?? 0) < $totalRequired) {
-            return response()->json(['success' => false, 'message' => 'Insufficient balance.'], 422);
-        }
+        // Deduct from account
+        $fromAccount->account_amount -= $totalRequired;
+        $fromAccount->save();
 
         $transfer = Transfer::create([
             'user_id' => $user->id,
@@ -185,14 +201,12 @@ class TransferController extends Controller
             ],
         ]);
 
-        // Log activity
         Activity::create([
             'user_id' => $user->id,
             'description' => "Submitted international transfer of {$validated['amount']} (ref: {$transfer->reference})",
             'type' => 'transfer',
         ]);
 
-        // Send notification email
         $details = [
             'subject' => 'International Transfer Submitted',
             'user_name' => $user->first_name . ' ' . $user->last_name,
@@ -209,7 +223,7 @@ class TransferController extends Controller
         ]);
     }
 
-    /** Self Transfer (Internal) */
+    /** Self/Internal Transfer */
     public function selfTransfer(Request $request)
     {
         $user = Auth::user();
@@ -232,52 +246,56 @@ class TransferController extends Controller
             return response()->json(['success' => false, 'message' => 'Invalid source or destination account']);
         }
 
-        $settings = AdminSetting::first();
-        $serviceCharge = $settings->service_charge ?? 0;
-
-        if (($user->balance ?? 0) < ($request->amount + $serviceCharge)) {
-            return response()->json(['success' => false, 'message' => 'Insufficient balance.'], 422);
+        if ($fromAccount->account_amount < $request->amount) {
+            return response()->json(['success' => false, 'message' => 'Insufficient account balance'], 422);
         }
 
-        $transfer = Transfer::create([
-            'user_id' => $user->id,
-            'type' => 'self',
-            'amount' => $request->amount,
-            'bank_name' => 'Internal Transfer',
-            'account_name' => $toAccount->account_name ?? $user->first_name . ' ' . $user->last_name ?? $user->email,
-            'account_number' => $fromAccount->account_number,
-            'details' => "Transfer from Account #{$fromAccount->id} to Account #{$toAccount->id}",
-            'reference' => strtoupper(Str::random(10)),
-            'status' => 'pending',
-            'meta' => [
-                'from_account' => $fromAccount->id,
-                'from_account_name' => $fromAccount->account_name,
-                'to_account' => $toAccount->id,
-                'to_account_name' => $toAccount->account_name,
-                'service_charge' => $serviceCharge
-            ],
-        ]);
+        // Perform debit and credit in transaction
+        DB::transaction(function() use ($fromAccount, $toAccount, $request, $user) {
+            $fromAccount->account_amount -= $request->amount;
+            $fromAccount->save();
 
-        Activity::create([
-            'user_id' => $user->id,
-            'description' => "Submitted internal transfer of {$request->amount} from account #{$fromAccount->id} to #{$toAccount->id} (ref: {$transfer->reference})",
-            'type' => 'transfer',
-        ]);
+            $toAccount->account_amount += $request->amount;
+            $toAccount->save();
 
-        // Send email notification
-        $details = [
-            'subject' => 'Self Transfer Submitted',
-            'user_name' => $user->first_name . ' ' . $user->last_name,
-            'message' => "Your internal transfer request has been submitted and is pending admin confirmation.",
-            'amount' => $request->amount,
-            'type' => 'self',
-        ];
-        Mail::to($user->email)->send(new TransferNotificationMail($details));
+            $transfer = Transfer::create([
+                'user_id' => $user->id,
+                'type' => 'self',
+                'amount' => $request->amount,
+                'bank_name' => 'Internal Transfer',
+                'account_name' => $toAccount->account_name ?? $user->first_name . ' ' . $user->last_name ?? $user->email,
+                'account_number' => $fromAccount->account_number,
+                'details' => "Transfer from Account #{$fromAccount->id} to Account #{$toAccount->id}",
+                'reference' => strtoupper(Str::random(10)),
+                'status' => 'pending',
+                'meta' => [
+                    'from_account' => $fromAccount->id,
+                    'from_account_name' => $fromAccount->account_name,
+                    'to_account' => $toAccount->id,
+                    'to_account_name' => $toAccount->account_name,
+                ],
+            ]);
+
+            Activity::create([
+                'user_id' => $user->id,
+                'description' => "Submitted internal transfer of {$request->amount} from account #{$fromAccount->id} to #{$toAccount->id} (ref: {$transfer->reference})",
+                'type' => 'transfer',
+            ]);
+
+            // Send email notification
+            $details = [
+                'subject' => 'Self Transfer Submitted',
+                'user_name' => $user->first_name . ' ' . $user->last_name,
+                'message' => "Your internal transfer request has been submitted and is pending admin confirmation.",
+                'amount' => $request->amount,
+                'type' => 'self',
+            ];
+            Mail::to($user->email)->send(new TransferNotificationMail($details));
+        });
 
         return response()->json([
             'success' => true,
             'message' => 'Self transfer recorded successfully! Pending admin confirmation.',
-            'transfer_id' => $transfer->id
         ]);
     }
 
@@ -289,113 +307,77 @@ class TransferController extends Controller
         return view('account.user.transfer_history', compact('transfers'));
     }
 
-
+    /** Verify codes for transfers */
     public function verifyCodes(Request $request)
-{
-    $user = Auth::user();
-    $settings = AdminSetting::first();
+    {
+        $user = Auth::user();
+        $settings = AdminSetting::first();
 
-    $normalize = fn($v) => $v ? strtoupper(trim($v)) : null;
-    $errors = [];
-    $valid = true;
+        $normalize = fn($v) => $v ? strtoupper(trim($v)) : null;
+        $errors = [];
+        $valid = true;
 
-    // Validate required codes if enabled
-    if ($settings->cot_enabled) {
-        if (empty($request->cot_code)) {
+        if ($settings->cot_enabled && empty($request->cot_code)) {
             $errors['cot'] = 'COT code is required';
             $valid = false;
-        } elseif ($normalize($request->cot_code) !== $normalize($settings->global_cot_code)) {
+        } elseif ($settings->cot_enabled && $normalize($request->cot_code) !== $normalize($settings->global_cot_code)) {
             $errors['cot'] = 'Invalid COT code';
             $valid = false;
         }
-    }
 
-    if ($settings->tax_enabled) {
-        if (empty($request->tax_code)) {
+        if ($settings->tax_enabled && empty($request->tax_code)) {
             $errors['tax'] = 'TAX code is required';
             $valid = false;
-        } elseif ($normalize($request->tax_code) !== $normalize($settings->global_tax_code)) {
+        } elseif ($settings->tax_enabled && $normalize($request->tax_code) !== $normalize($settings->global_tax_code)) {
             $errors['tax'] = 'Invalid TAX code';
             $valid = false;
         }
-    }
 
-    if ($settings->imf_enabled) {
-        if (empty($request->imf_code)) {
+        if ($settings->imf_enabled && empty($request->imf_code)) {
             $errors['imf'] = 'IMF code is required';
             $valid = false;
-        } elseif ($normalize($request->imf_code) !== $normalize($settings->global_imf_code)) {
+        } elseif ($settings->imf_enabled && $normalize($request->imf_code) !== $normalize($settings->global_imf_code)) {
             $errors['imf'] = 'Invalid IMF code';
             $valid = false;
         }
+
+        if (!$valid) {
+            return response()->json(['success' => false, 'message' => 'One or more codes are missing or incorrect.', 'errors' => $errors], 422);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Code verified successfully.']);
     }
 
-    if (!$valid) {
-        return response()->json([
-            'success' => false,
-            'message' => 'One or more codes are missing or incorrect.',
-            'errors' => $errors
-        ], 422);
+    /** Verify single code */
+    public function verifySingleCode(Request $request)
+    {
+        $request->validate([
+            'code_type' => 'required|in:cot,tax,imf',
+            'code' => 'required|string'
+        ]);
+
+        $type = $request->input('code_type');
+        $code = strtoupper(trim($request->input('code')));
+        $settings = AdminSetting::first();
+        $normalize = fn($v) => $v ? strtoupper(trim($v)) : null;
+
+        $fail = fn($msg = 'Invalid code') => response()->json(['success' => false, 'message' => $msg], 422);
+
+        if ($type === 'cot') {
+            if (!$settings->cot_enabled) return $fail('COT not required');
+            if ($normalize($code) !== $normalize($settings->global_cot_code)) return $fail('Invalid COT code');
+        }
+        if ($type === 'tax') {
+            if (!$settings->tax_enabled) return $fail('TAX not required');
+            if ($normalize($code) !== $normalize($settings->global_tax_code)) return $fail('Invalid TAX code');
+        }
+        if ($type === 'imf') {
+            if (!$settings->imf_enabled) return $fail('IMF not required');
+            if ($normalize($code) !== $normalize($settings->global_imf_code)) return $fail('Invalid IMF code');
+        }
+
+        return response()->json(['success' => true, 'message' => strtoupper($type) . ' verified']);
     }
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Code verified successfully.'
-    ]);
-}
-
-/**
- * Verify a single code (COT, TAX or IMF) — used for sequential modal checks.
- */
-public function verifySingleCode(Request $request)
-{
-    $request->validate([
-        'code_type' => 'required|in:cot,tax,imf',
-        'code' => 'required|string'
-    ]);
-
-    $type = $request->input('code_type');
-    $code = strtoupper(trim($request->input('code')));
-    $settings = AdminSetting::first();
-
-    $normalize = fn($v) => $v ? strtoupper(trim($v)) : null;
-
-    // Helper to return failure
-    $fail = function($msg = 'Invalid code') {
-        return response()->json(['success' => false, 'message' => $msg], 422);
-    };
-
-    if ($type === 'cot') {
-        if (!$settings->cot_enabled) {
-            return $fail('COT not required');
-        }
-        if ($normalize($code) !== $normalize($settings->global_cot_code)) {
-            return $fail('Invalid COT code');
-        }
-    }
-
-    if ($type === 'tax') {
-        if (!$settings->tax_enabled) {
-            return $fail('TAX not required');
-        }
-        if ($normalize($code) !== $normalize($settings->global_tax_code)) {
-            return $fail('Invalid TAX code');
-        }
-    }
-
-    if ($type === 'imf') {
-        if (!$settings->imf_enabled) {
-            return $fail('IMF not required');
-        }
-        if ($normalize($code) !== $normalize($settings->global_imf_code)) {
-            return $fail('Invalid IMF code');
-        }
-    }
-
-    return response()->json(['success' => true, 'message' => strtoupper($type) . ' verified']);
-}
-
-
 
     /** Transfer Invoice */
     public function invoice($id)

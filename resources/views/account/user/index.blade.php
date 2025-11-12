@@ -24,9 +24,10 @@
     <!-- Profile & Balances Card -->
     <div class="col-lg-6 col-md-6">
         <div class="card border-0 shadow-lg rounded-50 position-relative">
-            <button class="btn btn-primary position-absolute top-0 end-0 m-3 rounded-circle" title="Add Deposit">
+            <a href="/account/deposit" class="btn btn-primary position-absolute top-0 end-0 m-3 rounded-circle" title="Add Deposit">
                 <i class="bi bi-plus-lg"></i>
-            </button>
+            </a>
+
             <div class="card-body text-center">
                 <div class="row d-flex align-items-center gap-3 mb-3">
                     <div class="col-1">
@@ -61,15 +62,15 @@
                 </div>
 
                 <div class="d-flex justify-content-around mt-3">
-                    <button class="btn btn-outline-primary btn-sm d-flex align-items-center">
+                    <a href="/account/deposit" class="btn btn-outline-primary btn-sm d-flex align-items-center">
                         <i class="bi bi-wallet2 me-1"></i> Deposit
-                    </button>
-                    <button class="btn btn-outline-success btn-sm d-flex align-items-center">
+                    </a>
+                    <a href="/account/transfer" class="btn btn-outline-success btn-sm d-flex align-items-center">
                         <i class="bi bi-arrow-left-right me-1"></i> Transfer
-                    </button>
-                    <button class="btn btn-outline-secondary btn-sm d-flex align-items-center">
+                    </a>
+                    <a href="/account/deposit" class="btn btn-outline-secondary btn-sm d-flex align-items-center">
                         <i class="bi bi-bank me-1"></i> To Bank
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>
@@ -109,51 +110,53 @@
                 <a href="#" class="text-primary small">View All</a>
             </div>
             <div class="card-body">
-               <ul class="list-group list-group-flush">
-    @forelse($recentDeposits as $deposit)
-        @php
-            $method = $deposit->method ?? 'deposit';
 
-            // Determine if this is a "debit" (negative) transaction
-            if(in_array($method, ['transfer_local', 'transfer_international'])) {
-                $iconClass = 'bi bi-arrow-up-circle text-danger';
-                $bgClass = 'bg-danger bg-opacity-10 text-danger';
-                $sign = '-';
-                $label = 'Transfer';
-            } else {
-                // All other transactions are credits
-                $iconClass = 'bi bi-arrow-down-circle text-success';
-                $bgClass = 'bg-success bg-opacity-10 text-success';
-                $sign = '+';
-                
-                // Determine label
-                if($method == 'deposit') $label = 'Deposit';
-                elseif($method == 'self_credit') $label = 'Self Credit';
-                elseif($method == 'loan') $label = 'Loan Payment';
-                else $label = ucfirst($method); // fallback label
-            }
-        @endphp
 
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-start">
-                <div class="icon-box {{ $bgClass }} rounded-circle me-3 d-flex align-items-center justify-content-center" style="width:40px; height:40px;">
-                    <i class="{{ $iconClass }} fs-5"></i>
-                </div>
-                <div>
-                    <div class="fw-semibold">{{ $label }}</div>
-                    <small class="text-muted">{{ $deposit->created_at->format('M d, Y') }}</small>
-                </div>
-            </div>
-            <div class="text-end">
-                <div class="fw-semibold {{ $sign == '+' ? 'text-success' : 'text-danger' }}">
-                    {{ $sign }} ₦{{ number_format($deposit->amount, 2) }}
-                </div>
-            </div>
-        </li>
-    @empty
-        <li class="list-group-item text-center text-muted">No recent transactions</li>
-    @endforelse
-</ul>
+                <ul class="list-group list-group-flush">
+                    @forelse($recentTransactions as $deposit)
+                    @php
+                    $method = $deposit['method'] ?? 'deposit';
+
+                    // Determine if this is a "debit" (negative) transaction
+                    if(in_array($method, ['transfer_local', 'transfer_international'])) {
+                    $iconClass = 'bi bi-arrow-up-circle text-danger';
+                    $bgClass = 'bg-danger bg-opacity-10 text-danger';
+                    $sign = '-';
+                    $label = 'Transfer';
+                    } else {
+                    // All other transactions are credits
+                    $iconClass = 'bi bi-arrow-down-circle text-success';
+                    $bgClass = 'bg-success bg-opacity-10 text-success';
+                    $sign = '+';
+
+                    // Determine label
+                    if($method == 'deposit') $label = 'Deposit';
+                    elseif($method == 'self_credit') $label = 'Self Credit';
+                    elseif($method == 'loan') $label = 'Loan Payment';
+                    else $label = ucfirst($method); // fallback label
+                    }
+                    @endphp
+
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-start">
+                            <div class="icon-box {{ $bgClass }} rounded-circle me-3 d-flex align-items-center justify-content-center" style="width:40px; height:40px;">
+                                <i class="{{ $iconClass }} fs-5"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold">{{ $label }}</div>
+                                <small class="text-muted">{{ \Carbon\Carbon::parse($deposit['created_at'])->format('M d, Y') }}</small>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-semibold {{ $sign == '+' ? 'text-success' : 'text-danger' }}">
+                                {{ $sign }} ₦{{ number_format($deposit['amount'], 2) }}
+                            </div>
+                        </div>
+                    </li>
+                    @empty
+                    <li class="list-group-item text-center text-muted">No recent transactions</li>
+                    @endforelse
+                </ul>
 
 
             </div>
