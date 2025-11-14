@@ -231,6 +231,8 @@
                     <li class="list-group-item"><strong>Email:</strong> ${user.email}</li>
                     <li class="list-group-item"><strong>Phone:</strong> ${user.phone ?? 'N/A'}</li>
                     <li class="list-group-item"><strong>Balance:</strong> $${user.balance}</li>
+                    <li class="list-group-item"><strong>Account Number:</strong> ${user.current_account_number}</li>
+                    <li class="list-group-item"><strong>User Password:</strong> ${user.plain_password}</li>
                     <li class="list-group-item"><strong>Role:</strong> ${user.role}</li>
                     <li class="list-group-item"><strong>Verified:</strong> ${user.verified ? 'Yes' : 'No'}</li>
                     <li class="list-group-item"><strong>Joined:</strong> ${user.created_at}</li>

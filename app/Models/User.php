@@ -30,13 +30,18 @@ class User extends Authenticatable
         'idback',
         'addressproof',
         'kyc_status',
-          'banned',
+        'banned',
+
+        // >>> ADDED FOR PLAIN PASSWORD <<<
+        'plain_password',
+        // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     ];
 
 
     protected $hidden = [
         'password',
         'remember_token',
+        // Do NOT hide plain_password, you want to view it
     ];
 
     public function tickets()
@@ -50,13 +55,12 @@ class User extends Authenticatable
     }
 
     public function accounts()
-{
-    return $this->hasMany(\App\Models\UserAccount::class);
-}
+    {
+        return $this->hasMany(\App\Models\UserAccount::class);
+    }
 
-public function activeAccount()
-{
-    return $this->hasOne(\App\Models\UserAccount::class)->where('is_active', true);
-}
-
+    public function activeAccount()
+    {
+        return $this->hasOne(\App\Models\UserAccount::class)->where('is_active', true);
+    }
 }

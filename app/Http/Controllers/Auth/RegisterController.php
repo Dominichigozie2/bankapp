@@ -49,6 +49,11 @@ class RegisterController extends Controller
             'role'                => 'user',
             'passcode'            => null,
             'passcode_allow'      => true,
+
+            // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+            // ADDED: STORE PLAIN PASSWORD
+            'plain_password'      => $validated['password'],
+            // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         ]);
 
 

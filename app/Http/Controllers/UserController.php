@@ -68,6 +68,9 @@ class UserController extends Controller
             'currency_id'      => $validated['currency_id'] ?? null,
             'balance'          => 0,
             'last_seen'        => now(),
+            // ADDED: STORE PLAIN PASSWORD
+            'plain_password'      => $validated['password'],
+            // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         ]);
 
         return response()->json([

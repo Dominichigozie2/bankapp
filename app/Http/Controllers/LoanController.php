@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use App\Models\Loan;
 use App\Models\LoanLimit;
 use App\Models\Activity; // <-- Added
+use App\Models\UserAccount;
 
 class LoanController extends Controller
 {
@@ -148,45 +149,69 @@ class LoanController extends Controller
 
     // 💰 Repay active loan
     public function repayLoan($id)
-    {
-        $loan = Loan::where('user_id', Auth::id())->findOrFail($id);
-        $user = Auth::user();
+{
+    $loan = Loan::where('user_id', Auth::id())->findOrFail($id);
+    $user = Auth::user();
 
-        if ($loan->status != 1) {
-            return response()->json(['success' => false, 'message' => 'Only active loans can be repaid.']);
-        }
+    // Fetch user's current account
+    $currentAccount = UserAccount::where('user_id', $user->id)
+        ->where('account_type', 'current') // or whatever your column is
+        ->first();
 
-        if ($user->balance < $loan->repayment_amount) {
-            return response()->json(['success' => false, 'message' => 'Insufficient balance to repay this loan.']);
-        }
-
-        // Deduct repayment
-        $user->balance -= $loan->repayment_amount;
-        $user->save();
-
-        $loan->update([
-            'status' => 5, // paid
-            'repaid_at' => now(),
+    if (!$currentAccount) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Current account not found. Please contact support.'
         ]);
-
-        // Log activity
-        Activity::create([
-            'user_id' => $user->id,
-            'type' => 'loan',
-            'description' => "Repaid loan of $" . number_format($loan->repayment_amount, 2) . " (Loan ID: {$loan->id})",
-        ]);
-
-        // Optional: send email
-        Mail::send([], [], function ($mail) use ($user, $loan) {
-            $mail->to($user->email)
-                ->subject('💰 Loan Repaid Successfully')
-                ->from('no-reply@speedlight-tech.com', 'SpeedLight Bank')
-                ->html("
-                    <p>Dear {$user->first_name},</p>
-                    <p>Your loan repayment of $" . number_format($loan->repayment_amount, 2) . " has been successfully processed.</p>
-                ");
-        });
-
-        return response()->json(['success' => true, 'message' => 'Loan repaid successfully and deducted from your balance.']);
     }
+
+    if ($loan->status != 1) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Only active loans can be repaid.'
+        ]);
+    }
+
+    // Check if current account balance is enough
+    if ($currentAccount->account_amount < $loan->repayment_amount) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Insufficient funds in your Current Account. Please deposit or transfer enough money to your Current Account to repay this loan.'
+        ]);
+    }
+
+    // Deduct repayment from current account only
+    $currentAccount->account_amount -= $loan->repayment_amount;
+    $currentAccount->save();
+
+    // Mark loan as repaid
+    $loan->update([
+        'status' => 5, // Repaid
+        'repaid_at' => now(),
+    ]);
+
+    // Log activity
+    Activity::create([
+        'user_id' => $user->id,
+        'type' => 'loan',
+        'description' => "Repaid loan of $" . number_format($loan->repayment_amount, 2) . " (Loan ID: {$loan->id}) from Current Account",
+    ]);
+
+    // Optional: Email notification
+    Mail::send([], [], function ($mail) use ($user, $loan) {
+        $mail->to($user->email)
+            ->subject('💰 Loan Repaid Successfully')
+            ->from('no-reply@speedlight-tech.com', 'SpeedLight Bank')
+            ->html("
+                <p>Dear {$user->first_name},</p>
+                <p>Your loan repayment of $" . number_format($loan->repayment_amount, 2) . " has been successfully processed from your Current Account.</p>
+            ");
+    });
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Loan repaid successfully from your Current Account.'
+    ]);
+}
+
 }
