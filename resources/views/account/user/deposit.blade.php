@@ -99,7 +99,7 @@ $settings = AdminSetting::first();
                 {!! $settings->deposit_instruction ?? 'Please request for your deposit codes before proceeding.' !!}
             </div>
             <div class="modal-footer">
-                <a href="account/report" class="btn btn-primary">Request Code</a>
+                <a href="/account/report" class="btn btn-primary">Request Code</a>
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>

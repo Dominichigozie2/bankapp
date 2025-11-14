@@ -35,4 +35,12 @@ class Deposit extends Model
     {
         return $this->belongsTo(CryptoType::class);
     }
+       /**
+     * The user account related to this deposit
+     */
+    public function userAccount()
+    {
+        return $this->belongsTo(UserAccount::class, 'user_account_id');
+    }
+
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Ticket;
 use App\Models\TicketMessage;
+use App\Models\Activity; // ✅ Make sure this is imported
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Mail\TicketReply;
@@ -46,49 +47,68 @@ class AdminTicketController extends Controller
                 ];
             }),
         ]);
+        
     }
 
     /**
      * Handle admin replying to a ticket.
      */
     public function reply(Request $request, $id)
-    {
-        $ticket = Ticket::findOrFail($id);
+{
+    $ticket = Ticket::findOrFail($id);
 
-        $validated = $request->validate([
-            'message' => 'required|string',
-        ]);
+    $validated = $request->validate([
+        'message' => 'required|string',
+    ]);
 
-        if ($ticket->status === 'closed') {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'This ticket is closed and cannot be replied to.'
-            ], 400);
-        }
-
-        // Save admin reply
-        $message = TicketMessage::create([
-            'ticket_id' => $ticket->id,
-            'user_id' => $ticket->user_id, // still linked to user
-            'message' => $validated['message'],
-            'sender_type' => 'admin',
-        ]);
-
-        // Keep ticket open
-        $ticket->update(['status' => 'open']);
-
-        // Send mail to user
-        try {
-            Mail::to($ticket->user->email)->send(new TicketReply($ticket, $message));
-        } catch (\Exception $e) {
-            Log::error('Admin reply mail failed: ' . $e->getMessage());
-        }
-
+    if ($ticket->status === 'closed') {
         return response()->json([
-            'status' => 'success',
-            'message' => 'Reply sent successfully to user.'
-        ]);
+            'status' => 'error',
+            'message' => 'This ticket is closed and cannot be replied to.'
+        ], 400);
     }
+
+    // Save admin reply
+    $message = TicketMessage::create([
+        'ticket_id' => $ticket->id,
+        'user_id' => $ticket->user_id,
+        'message' => $validated['message'],
+        'sender_type' => 'admin',
+    ]);
+
+    // Keep ticket open
+    $ticket->update(['status' => 'open']);
+
+    // Log activity for the user
+    Activity::create([
+        'user_id' => $ticket->user_id,
+        'description' => "Admin replied to ticket #{$ticket->ticket_number}: {$validated['message']}",
+        'type' => 'ticket',
+    ]);
+
+    // Send mail to user
+    try {
+        Mail::to($ticket->user->email)->send(new TicketReply($ticket, $message));
+    } catch (\Exception $e) {
+        Log::error('Admin reply mail to user failed: ' . $e->getMessage());
+    }
+
+    // Send mail to admin (site_email)
+    try {
+        $siteEmail = \App\Models\AdminSetting::first()?->site_email;
+        if ($siteEmail) {
+            Mail::to($siteEmail)->send(new \App\Mail\TicketReply($ticket, $message));
+        }
+    } catch (\Exception $e) {
+        Log::error('Admin reply mail to site admin failed: ' . $e->getMessage());
+    }
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Reply sent successfully to user and admin, and logged in activity.'
+    ]);
+}
+
 
     /**
      * Close ticket.
@@ -99,9 +119,16 @@ class AdminTicketController extends Controller
 
         $ticket->update(['status' => 'closed']);
 
+        // Log activity
+        Activity::create([
+            'user_id' => $ticket->user_id,
+            'description' => "Admin closed ticket #{$ticket->ticket_number}",
+            'type' => 'ticket',
+        ]);
+
         return response()->json([
             'status' => 'success',
-            'message' => 'Ticket closed successfully.'
+            'message' => 'Ticket closed successfully and activity logged.'
         ]);
     }
 }

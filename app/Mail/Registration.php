@@ -8,20 +8,18 @@ use Illuminate\Queue\SerializesModels;
 
 class Registration extends Mailable
 {
-    use Queueable, SerializesModels;
+    public $user;
 
-    public $name;
-    public $currentAccountNumber;
-
-    public function __construct($name, $currentAccountNumber)
+    public function __construct($user)
     {
-        $this->name = $name;
-        $this->currentAccountNumber = $currentAccountNumber;
+        $this->user = $user;
     }
 
-    public function build()
-    {
-        return $this->subject('Your Account Account Number')
-                    ->markdown('emails.registration');
-    }
+public function build()
+{
+    return $this->subject('Welcome to Your New Bank')
+                ->view('emails.registration')
+                ->with(['user' => $this->user]);
+}
+
 }

@@ -32,8 +32,8 @@
 
                             <!-- Email -->
                             <div class="col-span-12">
-                                <label class="form-label">Email</label>
-                                <input type="email" name="email" class="form-input w-full" placeholder="Enter your email">
+                                <label class="form-label">Account Number</label>
+                                <input type="text" name="account_number" class="form-input w-full" placeholder="Enter your account number">
                             </div>
 
                             <!-- Password -->
@@ -141,7 +141,7 @@ $('#savePasscodeBtn').on('click', function() {
         method: "POST",
         data: {
             _token: "{{ csrf_token() }}",
-            email: email,
+            account_number: $('input[name="account_number"]').val(),
             passcode: passcode
         },
         success: function(res) {
@@ -163,16 +163,17 @@ $('#savePasscodeBtn').on('click', function() {
 });
 
 // Verify passcode and login
+// Verify passcode and login
 $('#verifyPasscodeBtn').on('click', function() {
     const passcode = $('#userPasscode').val();
-    const email = $('input[name="email"]').val();
+    const account_number = $('input[name="account_number"]').val(); // ✅ use account_number
 
     $.ajax({
         url: "{{ route('user.verify.passcode') }}",
         method: "POST",
         data: {
             _token: "{{ csrf_token() }}",
-            email: email,
+            account_number: account_number,
             passcode: passcode
         },
         success: function(res) {

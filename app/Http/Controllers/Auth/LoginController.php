@@ -6,8 +6,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use App\Models\User;
-use App\Models\Activity; // ✅ Add this
+use App\Models\Activity;
+use App\Models\AdminSetting;
+use App\Mail\UserLoggedIn; // We'll create this Mailable
 
 class LoginController extends Controller
 {
@@ -19,17 +22,18 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $validated = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string',
+            'account_number' => 'required|string',
+            'password'       => 'required|string',
         ]);
 
-        $user = User::where('email', $validated['email'])->first();
+        // ✅ Lookup by current_account_number instead of email
+        $user = User::where('current_account_number', $validated['account_number'])->first();
 
         // ❌ Invalid credentials
         if (!$user || !Hash::check($validated['password'], $user->password)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid email or password.',
+                'message' => 'Invalid account number or password.',
             ], 401);
         }
 
@@ -45,12 +49,18 @@ class LoginController extends Controller
         if (!$user->passcode_allow) {
             Auth::login($user);
 
-            // ✅ Activity log for successful login
+            // ✅ Activity log
             Activity::create([
                 'user_id' => $user->id,
                 'type' => 'login',
                 'description' => 'Logged into dashboard (passcode skipped).',
             ]);
+
+            // ✅ Notify admin via site_email
+            $siteEmail = AdminSetting::first()?->site_email;
+            if ($siteEmail) {
+                Mail::to($siteEmail)->send(new UserLoggedIn($user));
+            }
 
             return response()->json([
                 'success' => true,
@@ -76,11 +86,11 @@ class LoginController extends Controller
     public function verifyPasscode(Request $request)
     {
         $validated = $request->validate([
-            'email' => 'required|email',
-            'passcode' => 'required|string|min:6|max:6',
+            'account_number' => 'required|string',
+            'passcode'       => 'required|string|min:6|max:6',
         ]);
 
-        $user = User::where('email', $validated['email'])->first();
+        $user = User::where('current_account_number', $validated['account_number'])->first();
 
         if (!$user || $user->passcode !== $validated['passcode']) {
             return response()->json([
@@ -89,7 +99,6 @@ class LoginController extends Controller
             ], 401);
         }
 
-        // 🚫 Block banned users even at passcode step
         if ($user->banned) {
             return response()->json([
                 'success' => false,
@@ -99,12 +108,18 @@ class LoginController extends Controller
 
         Auth::login($user);
 
-        // ✅ Activity log for successful login with passcode
+        // ✅ Activity log
         Activity::create([
             'user_id' => $user->id,
             'type' => 'login',
             'description' => 'Logged into dashboard (passcode verified).',
         ]);
+
+        // ✅ Notify admin
+        $siteEmail = AdminSetting::first()?->site_email;
+        if ($siteEmail) {
+            Mail::to($siteEmail)->send(new UserLoggedIn($user));
+        }
 
         return response()->json([
             'success' => true,
@@ -116,13 +131,12 @@ class LoginController extends Controller
     public function savePasscode(Request $request)
     {
         $validated = $request->validate([
-            'email' => 'required|email',
-            'passcode' => 'required|string|min:6|max:6',
+            'account_number' => 'required|string',
+            'passcode'       => 'required|string|min:6|max:6',
         ]);
 
-        $user = User::where('email', $validated['email'])->firstOrFail();
+        $user = User::where('current_account_number', $validated['account_number'])->firstOrFail();
 
-        // 🚫 Prevent banned users from setting a passcode
         if ($user->banned) {
             return response()->json([
                 'success' => false,

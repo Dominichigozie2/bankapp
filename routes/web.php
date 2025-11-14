@@ -177,6 +177,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('admin/deposit/reject/{id}', [AdminDepositController::class, 'reject'])->name('admin.deposit.reject');
 
+    // Admin deposit edit
+    Route::post('/admin/deposit/edit/{id}', [AdminDepositController::class, 'editDeposit'])->name('admin.deposit.edit');
+
+
     // Profile page view
     Route::get('/account/profile', [UserProfileController::class, 'index'])->name('account.profile');
 

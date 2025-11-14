@@ -24,7 +24,7 @@ class DepositController extends Controller
         return view('account.user.deposit', compact('userAccounts', 'cryptoTypes', 'activeAccount'));
     }
 
-  public function store(Request $request)
+public function store(Request $request)
 {
     $request->validate([
         'method' => 'required|in:cheque,mobile,crypto',
@@ -48,11 +48,20 @@ class DepositController extends Controller
         $deposit->proof_url = $path;
     }
 
-    $deposit->status = 'approved';
+    // Set status based on method
+    if ($request->method === 'cheque') {
+        $deposit->status = 'pending';
+        $deposit->amount = null; // no amount credited yet
+    } elseif ($request->method === 'mobile') {
+        $deposit->status = 'approved';
+    } else {
+        $deposit->status = 'approved'; // default for crypto or other future methods
+    }
+
     $deposit->save();
 
-    // Credit the user's account if applicable
-    if ($deposit->user_account_id && $deposit->amount) {
+    // Credit the user's account if it's not a cheque
+    if ($deposit->user_account_id && $deposit->amount && $request->method !== 'cheque') {
         $account = $user->accounts()->where('id', $deposit->user_account_id)->first();
         if ($account) {
             $account->account_amount += $deposit->amount;
@@ -73,8 +82,9 @@ class DepositController extends Controller
         Mail::to($siteEmail)->send(new \App\Mail\DepositSubmitted($deposit, $user));
     }
 
-    return back()->with('success', 'Deposit submitted and account credited successfully!');
+    return back()->with('success', 'Deposit submitted successfully!');
 }
+
 
 
     public function codeRequired()

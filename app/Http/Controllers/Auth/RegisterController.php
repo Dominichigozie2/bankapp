@@ -25,87 +25,112 @@ class RegisterController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'first_name' => 'required|string|max:50',
-            'last_name' => 'required|string|max:50',
-            'email' => 'required|email|unique:users',
-            'phone' => 'required|string|max:20',
-            'account_type_id' => 'required|exists:account_types,id',
-            'currency_id' => 'required|exists:currencies,id',
-            'password' => 'required|min:6|confirmed',
+            'first_name'        => 'required|string|max:50',
+            'last_name'         => 'required|string|max:50',
+            'email'             => 'required|email|unique:users',
+            'phone'             => 'required|string|max:20',
+            'account_type_id'   => 'required|exists:account_types,id',
+            'currency_id'       => 'required|exists:currencies,id',
+            'password'          => 'required|min:6|confirmed',
         ]);
 
-        // Create the main user record
+        // ================================
+        // STEP 1: Create User
+        // ================================
         $user = User::create([
-            'first_name' => $validated['first_name'],
-            'last_name'  => $validated['last_name'],
-            'email'      => $validated['email'],
-            'phone'      => $validated['phone'],
-            'account_type_id' => $validated['account_type_id'],
-            'currency_id'     => $validated['currency_id'],
-            'password'   => Hash::make($validated['password']),
-            'balance'    => 0,
-            'role'       => 'user',
-            'passcode'   => null,
-            'passcode_allow' => true,
+            'first_name'          => $validated['first_name'],
+            'last_name'           => $validated['last_name'],
+            'email'               => $validated['email'],
+            'phone'               => $validated['phone'],
+            'account_type_id'     => $validated['account_type_id'],
+            'currency_id'         => $validated['currency_id'],
+            'password'            => Hash::make($validated['password']),
+            'balance'             => 0,
+            'role'                => 'user',
+            'passcode'            => null,
+            'passcode_allow'      => true,
         ]);
 
-        // ✅ Step 1: Get IDs of the default account types (Current and Savings)
+
+        // ================================
+        // STEP 2: Fetch Current + Savings Types
+        // ================================
         $currentType = AccountType::where('name', 'Current')->first();
         $savingsType = AccountType::where('name', 'Savings')->first();
 
-        // ✅ Step 2: Create Current and Savings accounts
-        $accountsToCreate = [
-            [
-                'user_id' => $user->id,
-                'account_type_id' => $currentType->id ?? null,
-                'account_number' => $this->generateAccountNumber(),
-                'account_amount' => 0,
-                'is_active' => true,
-            ],
-            [
-                'user_id' => $user->id,
-                'account_type_id' => $savingsType->id ?? null,
-                'account_number' => $this->generateAccountNumber(),
-                'account_amount' => 0,
-                'is_active' => true,
-            ],
+
+        // ================================
+        // STEP 3: Create accounts
+        // ================================
+        $accounts = [];
+
+        // Current account (MAIN)
+        $currentAccNumber = $this->generateAccountNumber();
+        $accounts[] = [
+            'user_id'         => $user->id,
+            'account_type_id' => $currentType->id ?? null,
+            'account_number'  => $currentAccNumber,
+            'account_amount'  => 0,
+            'is_active'       => true,
         ];
 
-        // ✅ Step 3: If the user chose an extra account type (not current or savings)
+        // Savings account
+        $accounts[] = [
+            'user_id'         => $user->id,
+            'account_type_id' => $savingsType->id ?? null,
+            'account_number'  => $this->generateAccountNumber(),
+            'account_amount'  => 0,
+            'is_active'       => true,
+        ];
+
+        // Extra selected account (IF not current or savings)
         if (!in_array($validated['account_type_id'], [$currentType->id ?? 0, $savingsType->id ?? 0])) {
-            $accountsToCreate[] = [
-                'user_id' => $user->id,
+            $accounts[] = [
+                'user_id'         => $user->id,
                 'account_type_id' => $validated['account_type_id'],
-                'account_number' => $this->generateAccountNumber(),
-                'account_amount' => 0,
-                'is_active' => true,
+                'account_number'  => $this->generateAccountNumber(),
+                'account_amount'  => 0,
+                'is_active'       => true,
             ];
         }
 
-        // ✅ Step 4: Insert all accounts
-        foreach ($accountsToCreate as $acc) {
+
+        // ================================
+        // STEP 4: Insert all accounts into user_accounts
+        // ================================
+        foreach ($accounts as $acc) {
             if ($acc['account_type_id']) {
                 UserAccount::create($acc);
             }
         }
 
-        // ✅ Step 5: Send welcome email with one of the account numbers
-        $mainAccountNumber = $accountsToCreate[0]['account_number'];
-        Mail::to($user->email)->send(new Registration($user->first_name, $mainAccountNumber));
+
+        // ================================
+        // STEP 5: Store current account number in Users table
+        // ================================
+        $user->update([
+            'current_account_number' => $currentAccNumber
+        ]);
+
+
+        // ================================
+        // STEP 6: Send Registration Email
+        // ================================
+        Mail::to($user->email)->send(new Registration($user));
+
 
         return response()->json([
             'success' => true,
-            'message' => 'Registration successful! Your accounts have been created. Check your email for details.',
+            'message' => 'Registration successful! Your accounts have been created.',
         ]);
     }
+
 
     private function generateAccountNumber()
     {
         do {
             $number = mt_rand(1000000000, 9999999999); // 10 digits
-        } while (
-            UserAccount::where('account_number', $number)->exists()
-        );
+        } while (UserAccount::where('account_number', $number)->exists());
 
         return $number;
     }

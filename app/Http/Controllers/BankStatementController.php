@@ -17,9 +17,10 @@ class BankStatementController extends Controller
         $user = Auth::user();
 
         $typeFilter = $request->query('type'); // Deposit, Transfer, Loan
-        $dateFrom = $request->query('from');   
-        $dateTo = $request->query('to');       
+        $dateFrom = $request->query('from');
+        $dateTo = $request->query('to');
 
+        // --- Deposits ---
         // --- Deposits ---
         $deposits = Deposit::where('user_id', $user->id)
             ->when($dateFrom, fn($q) => $q->whereDate('created_at', '>=', $dateFrom))
@@ -28,12 +29,14 @@ class BankStatementController extends Controller
             ->map(fn($d) => [
                 'id' => $d->id,
                 'type' => 'Deposit',
-                'amount' => $d->amount,
-                'status' => $d->status ? 'Successful' : 'Pending',
+                'amount' => $d->amount, // ✅ show the actual deposit amount
+                'status' => strtolower($d->status) === 'approved' ? 'Successful' : 'Pending',
                 'created_at' => $d->created_at,
                 'details' => "Deposit via {$d->method}",
                 'proof_url' => $d->proof_url,
             ]);
+
+
 
         // --- Transfers ---
         $transfers = Transfer::where('user_id', $user->id)
@@ -109,13 +112,13 @@ class BankStatementController extends Controller
     {
         $transaction = $this->getTransactionModel($type, $id);
         $pdf = Pdf::loadView('account.user.transaction.receipt', compact('transaction'));
-        return $pdf->download('transaction_'.$transaction->id.'.pdf');
+        return $pdf->download('transaction_' . $transaction->id . '.pdf');
     }
 
     // Helper to get the correct model based on type
     private function getTransactionModel($type, $id)
     {
-        switch(strtolower($type)) {
+        switch (strtolower($type)) {
             case 'deposit':
                 return Deposit::findOrFail($id);
             case 'transfer':

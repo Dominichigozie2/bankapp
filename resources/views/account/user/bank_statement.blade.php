@@ -27,8 +27,6 @@
 
 <div class="container card p-4 w-60 mt-4">
 
-
-
     <div class="d-flex justify-content-between align-items-center w-100 mb-4">
         <h2>Bank Statement</h2>
         <a href="{{ route('account.bank.statement.download', request()->query()) }}" class="btn btn-success">
@@ -43,25 +41,23 @@
             <input type="date" name="from" class="form-control" value="{{ $dateFrom }}">
         </div>
         <div class="col-md-3">
-            <label class="form-label">to</label>
+            <label class="form-label">To</label>
             <input type="date" name="to" class="form-control" value="{{ $dateTo }}">
         </div>
         <div class="col-md-3">
             <label class="form-label">Type</label>
             <select name="type" class="form-select">
                 <option value="">All Types</option>
-                <option value="Deposit" @selected($typeFilter=='Deposit' )>Deposit</option>
-                <option value="Local Transfer" @selected($typeFilter=='Local Transfer' )>Local Transfer</option>
-                <option value="International Transfer" @selected($typeFilter=='International Transfer' )>International Transfer</option>
-                <option value="Self Transfer" @selected($typeFilter=='Self Transfer' )>Self Transfer</option>
-                <option value="Loan" @selected($typeFilter=='Loan' )>Loan</option>
+                <option value="Deposit" @selected($typeFilter=='Deposit')>Deposit</option>
+                <option value="Local Transfer" @selected($typeFilter=='Local Transfer')>Local Transfer</option>
+                <option value="International Transfer" @selected($typeFilter=='International Transfer')>International Transfer</option>
+                <option value="Self Transfer" @selected($typeFilter=='Self Transfer')>Self Transfer</option>
+                <option value="Loan" @selected($typeFilter=='Loan')>Loan</option>
             </select>
         </div>
         <div class="col-md-3">
-
             <button class="btn btn-primary" type="submit">Filter</button>
         </div>
-
     </form>
 
     {{-- Transactions Table --}}
@@ -79,17 +75,20 @@
         <tbody>
             @forelse($transactions as $tx)
             @php
-            $statusColor = in_array($tx['status'], [1,'1']) ? 'text-success fw-bold' : 'text-danger fw-bold';
-            $statusText = in_array($tx['status'], [1,'1']) ? 'Successful' : 'Pending';
-            $isTransfer = in_array($tx['type'], ['Local Transfer','International Transfer']);
-            $amountColor = ($tx['type'] === 'Deposit' || $tx['type'] === 'Self Transfer' || $tx['type'] === 'Loan') ? 'text-success' : ($isTransfer ? 'text-danger' : 'text-muted');
-            $amountSign = ($tx['type'] === 'Deposit' || $tx['type'] === 'Self Transfer' || $tx['type'] === 'Loan') ? '+' : ($isTransfer ? '-' : '');
+                $statusText = $tx['status']; 
+                $statusColor = $statusText === 'Successful' ? 'text-success fw-bold' : 'text-danger fw-bold';
+
+                $isTransfer = in_array($tx['type'], ['Local Transfer','International Transfer']);
+                $amountColor = ($tx['type'] === 'Deposit' || $tx['type'] === 'Self Transfer' || $tx['type'] === 'Loan') ? 'text-success' : ($isTransfer ? 'text-danger' : 'text-muted');
+                $amountSign = ($tx['type'] === 'Deposit' || $tx['type'] === 'Self Transfer' || $tx['type'] === 'Loan') ? '+' : ($isTransfer ? '-' : '');
             @endphp
             <tr>
                 <td>{{ \Carbon\Carbon::parse($tx['created_at'])->format('d M Y, H:i') }}</td>
                 <td>{{ $tx['type'] }}</td>
                 <td>{{ $tx['details'] }}</td>
-                <td class="{{ $amountColor }}">{{ $amountSign }}{{ number_format($tx['amount'],2) }}</td>
+                <td class="{{ $amountColor }}">
+                    {{ $amountSign }}{{ $tx['amount'] !== null ? number_format($tx['amount'],2) : '' }}
+                </td>
                 <td class="{{ $statusColor }}">{{ $statusText }}</td>
                 <td>
                     <button
@@ -99,7 +98,7 @@
                         data-id="{{ $tx['id'] }}"
                         data-type="{{ $tx['type'] }}"
                         data-details="{{ $tx['details'] }}"
-                        data-amount="{{ $tx['amount'] }}"
+                        data-amount="{{ $tx['amount'] ?? '' }}"
                         data-status="{{ $statusText }}"
                         data-date="{{ \Carbon\Carbon::parse($tx['created_at'])->format('d M Y, H:i') }}">
                         <i class="bi bi-eye"></i> View
@@ -119,24 +118,19 @@
         {{ $transactions->links('pagination::bootstrap-5') }}
     </div>
 </div>
+
 @endsection
 
 @section('scripts')
 <style>
-    /* Adjust pagination arrows */
-    .page-link {
-        font-size: 0.9rem;
-        /* smaller size */
-        padding: 0.3rem 0.6rem;
-    }
-
-    /* Optional: hover effects for table rows */
-    .table-hover tbody tr:hover {
-        background-color: #f1f1f1;
-    }
+.page-link {
+    font-size: 0.9rem;
+    padding: 0.3rem 0.6rem;
+}
+.table-hover tbody tr:hover {
+    background-color: #f1f1f1;
+}
 </style>
-
-
 
 <script>
 document.querySelectorAll('.view-receipt-btn').forEach(btn => {
@@ -151,14 +145,11 @@ document.querySelectorAll('.view-receipt-btn').forEach(btn => {
         document.getElementById('receiptDate').innerText = date;
         document.getElementById('receiptType').innerText = type;
         document.getElementById('receiptDetails').innerText = details;
-        document.getElementById('receiptAmount').innerText = parseFloat(amount).toFixed(2);
+        document.getElementById('receiptAmount').innerText = amount ? parseFloat(amount).toFixed(2) : '';
         document.getElementById('receiptStatus').innerText = status;
 
-        // Set download link
         document.getElementById('downloadReceiptBtn').href = '/bank-statement/receipt/download/' + id;
     });
 });
 </script>
-
-
 @endsection

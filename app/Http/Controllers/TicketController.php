@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Mail\TicketCreated;
 use App\Mail\TicketReply;
-use App\Models\Activity; // <-- Add this
+use App\Models\Activity;
 
 class TicketController extends Controller
 {
@@ -75,9 +75,14 @@ class TicketController extends Controller
             'description' => "Created a new ticket ({$ticket->ticket_number})",
         ]);
 
-        // Send notification emails
+        // Send notification emails to user and admin
         try {
-            Mail::to(config('mail.admin_email'))->send(new TicketCreated($ticket));
+            $adminEmail = \App\Models\AdminSetting::first()?->site_email ?? config('mail.admin_email');
+
+            if ($adminEmail) {
+                Mail::to($adminEmail)->send(new TicketCreated($ticket));
+            }
+
             Mail::to($user->email)->send(new TicketCreated($ticket));
         } catch (\Exception $e) {
             Log::error('Ticket email failed: ' . $e->getMessage());
@@ -162,8 +167,14 @@ class TicketController extends Controller
             'description' => "Replied to ticket ({$ticket->ticket_number})",
         ]);
 
+        // Send emails to user and admin
         try {
-            Mail::to(config('mail.admin_email'))->send(new TicketReply($ticket, $message));
+            $adminEmail = \App\Models\AdminSetting::first()?->site_email ?? config('mail.admin_email');
+
+            if ($adminEmail) {
+                Mail::to($adminEmail)->send(new TicketReply($ticket, $message));
+            }
+
             Mail::to($ticket->user->email)->send(new TicketReply($ticket, $message));
         } catch (\Exception $e) {
             Log::error('Ticket reply mail failed: ' . $e->getMessage());
