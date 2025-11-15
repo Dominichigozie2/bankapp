@@ -6,10 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 use App\Models\Loan;
 use App\Models\LoanLimit;
-use App\Models\Activity; // <-- Added
+use App\Models\Activity;
 use App\Models\UserAccount;
 
 class LoanController extends Controller
@@ -43,18 +42,15 @@ class LoanController extends Controller
         $user = Auth::user();
 
         // Prevent multiple active/pending loans
-        $existingActiveOrPending = Loan::where('user_id', $user->id)
-            ->whereIn('status', [1, 2]) // 1=approved, 2=pending
-            ->first();
-
-        if ($existingActiveOrPending) {
+        $existing = Loan::where('user_id', $user->id)->whereIn('status', [1, 2])->first();
+        if ($existing) {
             return response()->json(['success' => false, 'message' => 'You already have an active or pending loan.'], 400);
         }
 
         // Check loan limit
         $limit = LoanLimit::effectiveLimitFor($user->id);
         if (!is_null($limit) && (float)$request->amount > (float)$limit) {
-            return response()->json(['success' => false, 'message' => "Request exceeds allowed loan limit ({$limit})."], 400);
+            return response()->json(['success' => false, 'message' => "Request exceeds allowed loan limit ($limit)."], 400);
         }
 
         // Create the loan
@@ -73,10 +69,10 @@ class LoanController extends Controller
         Activity::create([
             'user_id' => $user->id,
             'type' => 'loan',
-            'description' => "Requested a loan of $" . number_format($request->amount, 2) . " (Type: {$request->loan_type})",
+            'description' => "Requested a loan of $" . number_format($request->amount, 2),
         ]);
 
-        // Send loan confirmation email
+        // Send email
         $this->sendLoanRequestEmail($user, $loan);
 
         return response()->json(['success' => true, 'message' => 'Loan request submitted successfully.']);
@@ -104,39 +100,30 @@ class LoanController extends Controller
             return response()->json(['valid' => false, 'message' => 'Incorrect account code.']);
         }
 
-        $limit = LoanLimit::where('user_id', $user->id)->value('limit_amount');
-        if (is_null($limit)) $limit = LoanLimit::whereNull('user_id')->value('limit_amount');
+        $limit = LoanLimit::where('user_id', $user->id)->value('limit_amount')
+              ?? LoanLimit::whereNull('user_id')->value('limit_amount');
+
         if (is_null($limit)) {
-            return response()->json(['valid' => false, 'message' => 'No loan limit set. Please contact admin.']);
+            return response()->json(['valid' => false, 'message' => 'No loan limit set. Contact admin.']);
         }
 
         if ($request->amount > $limit) {
             return response()->json([
                 'valid' => false,
-                'message' => 'Requested amount exceeds your loan limit of $' . number_format($limit, 2)
+                'message' => 'Requested amount exceeds loan limit: $' . number_format($limit, 2)
             ]);
         }
 
         return response()->json(['valid' => true, 'limit' => $limit]);
     }
 
-    // 📧 Helper: Send loan request email
+    // 📧 Email function
     protected function sendLoanRequestEmail($user, $loan)
     {
-        $subject = '✅ Loan Request Submitted Successfully';
+        $subject = 'Loan Request Submitted';
         $message = "
             <p>Dear {$user->first_name},</p>
-            <p>Your loan request has been <strong>successfully submitted</strong> and is currently <strong>pending approval</strong>.</p>
-            <p><strong>Loan Details:</strong></p>
-            <ul>
-                <li>Loan Type: {$loan->loan_type}</li>
-                <li>Amount: $" . number_format($loan->amount, 2) . "</li>
-                <li>Repayment Amount: $" . number_format($loan->repayment_amount, 2) . "</li>
-                <li>Duration: {$loan->duration}</li>
-                <li>Status: Pending Approval</li>
-            </ul>
-            <p>We’ll notify you once your loan has been reviewed.</p>
-            <p>Best regards,<br>SpeedLight Bank</p>
+            <p>Your loan request has been submitted and is pending approval.</p>
         ";
 
         Mail::send([], [], function ($mail) use ($user, $subject, $message) {
@@ -147,71 +134,60 @@ class LoanController extends Controller
         });
     }
 
-    // 💰 Repay active loan
+    // 💰 Repay active loan (DEDUCT ONLY FROM CURRENT ACCOUNT)
     public function repayLoan($id)
-{
-    $loan = Loan::where('user_id', Auth::id())->findOrFail($id);
-    $user = Auth::user();
+    {
+        $loan = Loan::where('user_id', Auth::id())->findOrFail($id);
+        $user = Auth::user();
 
-    // Fetch user's current account
-    $currentAccount = UserAccount::where('user_id', $user->id)
-        ->where('account_type', 'current') // or whatever your column is
-        ->first();
+        // Fetch current account properly
+        $current = UserAccount::where('user_id', $user->id)
+            ->whereHas('accountType', fn($q) => $q->where('name', 'Current'))
+            ->first();
 
-    if (!$currentAccount) {
+        if (!$current) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Current account not found.'
+            ]);
+        }
+
+        if ($loan->status != 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only approved loans can be repaid.'
+            ]);
+        }
+
+        if ($current->account_amount < $loan->repayment_amount) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Insufficient funds in Current Account.'
+            ]);
+        }
+
+        // Deduct repayment
+        $current->account_amount -= $loan->repayment_amount;
+        $current->save();
+
+        // Mark loan as repaid
+        $loan->update([
+            'status' => 5,
+            'repaid_at' => now(),
+        ]);
+
+        // Log activity
+        Activity::create([
+            'user_id' => $user->id,
+            'type' => 'loan',
+            'description' => "Repaid loan of $" . number_format($loan->repayment_amount, 2) . " from Current Account"
+        ]);
+
         return response()->json([
-            'success' => false,
-            'message' => 'Current account not found. Please contact support.'
+            'success' => true,
+            'message' => 'Loan repaid successfully from Current Account.'
         ]);
     }
 
-    if ($loan->status != 1) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Only active loans can be repaid.'
-        ]);
-    }
-
-    // Check if current account balance is enough
-    if ($currentAccount->account_amount < $loan->repayment_amount) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Insufficient funds in your Current Account. Please deposit or transfer enough money to your Current Account to repay this loan.'
-        ]);
-    }
-
-    // Deduct repayment from current account only
-    $currentAccount->account_amount -= $loan->repayment_amount;
-    $currentAccount->save();
-
-    // Mark loan as repaid
-    $loan->update([
-        'status' => 5, // Repaid
-        'repaid_at' => now(),
-    ]);
-
-    // Log activity
-    Activity::create([
-        'user_id' => $user->id,
-        'type' => 'loan',
-        'description' => "Repaid loan of $" . number_format($loan->repayment_amount, 2) . " (Loan ID: {$loan->id}) from Current Account",
-    ]);
-
-    // Optional: Email notification
-    Mail::send([], [], function ($mail) use ($user, $loan) {
-        $mail->to($user->email)
-            ->subject('💰 Loan Repaid Successfully')
-            ->from('no-reply@speedlight-tech.com', 'SpeedLight Bank')
-            ->html("
-                <p>Dear {$user->first_name},</p>
-                <p>Your loan repayment of $" . number_format($loan->repayment_amount, 2) . " has been successfully processed from your Current Account.</p>
-            ");
-    });
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Loan repaid successfully from your Current Account.'
-    ]);
-}
 
 }

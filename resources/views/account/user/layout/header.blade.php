@@ -9,7 +9,7 @@
 
     <div class="d-flex align-items-center gap-2">
 
-     
+
 
         <!-- NOTIFICATIONS -->
         <div class="dropdwn me-2">
@@ -26,27 +26,22 @@
                     <hr class="dropdown-divider">
                 </li>
 
-                <!-- sample items -->
-                 @forelse($recentActivities as $activity)
+                <!-- Recent Activities Dropdown -->
+                @forelse($recentActivities as $activity)
                 <li>
                     <a class="dropdown-item d-flex align-items-start" href="/account/activities">
                         <div class="flex-shrink-0 me-2">
-                            <i class="@if($activity->type == 'deposit' || $activity->type == 'self_credit') bi bi-arrow-down-circle text-success
-                @elseif($activity->type == 'loan') bi bi-wallet2 text-primary
-                @elseif($activity->type == 'profile') bi bi-person-circle text-secondary
-                @elseif($activity->type == 'login') bi bi-box-arrow-in-right text-info
-                @else bi bi-arrow-up-circle text-danger @endif
-                fs-5 me-3 text-primary"></i></div>
+                            <i class="bi bi-bell text-primary fs-5 me-3"></i>
+                        </div>
                         <div class="flex-grow-1">
-                            <div class="small text-muted">{{ $activity->type }}</div>
-                            <div>{{ $activity->description }}</div>
-                            <div class="small text-muted">2m ago</div>
+                            <div class="fw-semibold">{{ $activity->description }}</div>
+                            <small class="text-muted">{{ $activity->created_at->diffForHumans() }}</small>
                         </div>
                     </a>
                 </li>
                 @empty
-                    <li class="list-group-item text-center text-muted">No recent activities</li>
-                    @endforelse
+                <li class="list-group-item text-center text-muted">No recent activities</li>
+                @endforelse
 
                 <li>
                     <hr class="dropdown-divider">
@@ -66,7 +61,7 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
                 <li><a class="dropdown-item" href="/account/profile">Profile</a></li>
-                
+
                 <hr class="dropdown-divider">
                 <li>
                 </li>

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Loan;
 use App\Models\LoanLimit;
+use App\Models\UserAccount;
+use App\Models\Activity;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\LoanStatusMail;
@@ -19,6 +21,7 @@ class AdminLoanController extends Controller
         return view('account.admin.loan', compact('loans'));
     }
 
+    // ✅ Approve or Resume Loan
     // ✅ Approve or Resume Loan
     public function approve(Request $request, $id)
     {
@@ -63,11 +66,26 @@ class AdminLoanController extends Controller
                 'due_date' => $dueDate,
             ]);
 
+            // CREDIT Current Account
+            $current = UserAccount::where('user_id', $user->id)
+                ->whereHas('accountType', fn($q) => $q->where('name', 'Current'))
+                ->first();
+
+            if ($current) {
+                $current->account_amount += $approvedAmount;
+                $current->save();
+
+                Activity::create([
+                    'user_id' => $user->id,
+                    'description' => "Loan of $" . number_format($approvedAmount, 2) . " resumed and credited to Current Account.",
+                    'type' => 'loan',
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => 'Loan resumed successfully.'
+                'message' => 'Loan resumed successfully and credited to Current Account.'
             ]);
-
         }
 
         // 🧠 Case 3: Normal approval (first time)
@@ -79,29 +97,36 @@ class AdminLoanController extends Controller
             'due_date' => $dueDate,
         ]);
 
-        // ✅ Credit user once only
-        $user->balance = $user->balance + $approvedAmount;
-        $user->save();
+        // CREDIT Current Account
+        $current = UserAccount::where('user_id', $user->id)
+            ->whereHas('accountType', fn($q) => $q->where('name', 'Current'))
+            ->first();
 
+        if ($current) {
+            $current->account_amount += $approvedAmount;
+            $current->save();
+
+            Activity::create([
+                'user_id' => $user->id,
+                'description' => "Loan of $" . number_format($approvedAmount, 2) . " approved and credited to Current Account.",
+                'type' => 'loan',
+            ]);
+        }
+
+        // Email notification
         Mail::to($user->email)->send(new LoanStatusMail(
             $user,
             $loan,
             'Loan Approved',
-            "Your loan request of $$approvedAmount has been approved. The amount has been credited to your balance. Due date: {$dueDate->toFormattedDateString()}."
+            "Your loan request of $$approvedAmount has been approved. The amount has been credited to your Current Account. Due date: {$dueDate->toFormattedDateString()}."
         ));
 
         return response()->json([
             'success' => true,
-            'message' => 'Loan approved and credited to user balance.'
+            'message' => 'Loan approved and credited to Current Account.'
         ]);
-
-        Activity::create([
-            'user_id' => $loan->user_id,
-            'description' => "Your loan of $".$loan->amount." has been approved.",
-            'type' => 'loan',
-        ]);
-
     }
+
 
     // ⏸ Hold Loan
     public function hold($id)

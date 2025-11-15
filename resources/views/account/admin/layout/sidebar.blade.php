@@ -57,6 +57,7 @@
         <li><a href="/admin/tickets"><span>Tickets</span></a></li>
         <li><a href="/admin/crypto_types"><span>Crypto</span></a></li>
         <li><a href="/admin/accounttypes"><span>Add Account types</span></a></li>
+        <li><a href="/admin/currencies"><span>Add Currency</span></a></li>
       </ul>
     </li>
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\TransferController;
+use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\Admin\AdminSettingsController;
 use App\Http\Controllers\Admin\AdminTransferController;
 use App\Http\Controllers\Admin\AdminUserCodeController;
@@ -96,6 +97,16 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/credit-debit', [AdminDashboardController::class, 'creditDebitProcess'])->name('admin.creditdebit.process');
 
         Route::get('/credit-debit', [AdminDashboardController::class, 'creditDebitForm'])->name('admin.creditdebit');
+
+
+         Route::get('currencies', [CurrencyController::class, 'index'])->name('admin.currencies');
+    Route::post('currencies', [CurrencyController::class, 'store'])->name('admin.currencies.store');
+
+    Route::put('currencies/{currency}', [CurrencyController::class, 'update'])->name('admin.currencies.update');
+    
+    Route::delete('currencies/{currency}', [CurrencyController::class, 'destroy'])->name('admin.currencies.destroy');
+
+
     });
     // ==========================
     // 🔹 USER ROUTES
