@@ -50,7 +50,10 @@
 
                             <!-- Submit -->
                             <div class="col-span-12">
-                                <button type="submit" class="btn btn-primary w-full">Login</button>
+                                <button type="submit" class="btn btn-primary w-full btn-submit">
+                                     <span class="spinner-border spinner-border-sm me-2 d-none"></span>
+                                     <span>Login</span>
+                                </button>
                             </div>
                         </div>
                     </form>
@@ -65,7 +68,9 @@
     <div class="bg-white p-6 rounded-lg w-96">
         <h3 class="text-lg font-bold mb-4">Create Passcode</h3>
         <input type="text" id="newPasscode" class="form-input w-full mb-4" maxlength="6" placeholder="Enter 6-digit passcode">
-        <button id="savePasscodeBtn" class="btn btn-primary w-full">Save Passcode</button>
+        <button id="savePasscodeBtn" class="btn btn-primary w-full btn-submit">
+             <span class="spinner-border spinner-border-sm me-2 d-none"></span>
+            <span>Save Passcode</span></button>
     </div>
 </div>
 
@@ -74,7 +79,9 @@
     <div class="bg-white p-6 rounded-lg w-96">
         <h3 class="text-lg font-bold mb-4">Enter Passcode</h3>
         <input type="text" id="userPasscode" class="form-input w-full mb-4" maxlength="6" placeholder="Enter your passcode">
-        <button id="verifyPasscodeBtn" class="btn btn-primary w-full">Verify & Login</button>
+        <button id="verifyPasscodeBtn" class="btn btn-primary w-full btn-submit">
+            <span class="spinner-border spinner-border-sm me-2 d-none"></span>
+            <span>Verify & Login</span></button>
     </div>
 </div>
 
@@ -82,14 +89,35 @@
 
 @section('scripts')
 <script>
-   $('#loginForm').on('submit', function(e) {
+// Generic function to start preloader
+function startLoading(button) {
+    button.prop("disabled", true);
+    button.find(".btn-text").addClass("d-none");
+    button.find(".spinner-border").removeClass("d-none");
+}
+
+// Generic function to stop preloader
+function stopLoading(button) {
+    button.prop("disabled", false);
+    button.find(".spinner-border").addClass("d-none");
+    button.find(".btn-text").removeClass("d-none");
+}
+
+// LOGIN FORM SUBMIT
+$('#loginForm').on('submit', function(e) {
     e.preventDefault();
+
+    let button = $('#submitLoginBtn');
+
+    startLoading(button); // ⬅ Start preloader
 
     $.ajax({
         url: "{{ route('login.post') }}",
         method: "POST",
         data: $(this).serialize(),
         success: function(res) {
+            stopLoading(button); // ⬅ Stop preloader
+
             if (res.first_time) {
                 iziToast.info({
                     title: 'Setup Required',
@@ -122,6 +150,8 @@
             }
         },
         error: function(xhr) {
+            stopLoading(button); // ⬅ Stop preloader on error
+
             iziToast.error({
                 title: 'Error',
                 message: xhr.responseJSON?.message || 'Login failed.',
@@ -131,10 +161,11 @@
     });
 });
 
-// Save new passcode
+// SAVE PASSCODE
 $('#savePasscodeBtn').on('click', function() {
-    const passcode = $('#newPasscode').val();
-    const email = $('input[name="email"]').val();
+    let button = $(this);
+
+    startLoading(button);
 
     $.ajax({
         url: "{{ route('user.save.passcode') }}",
@@ -142,9 +173,11 @@ $('#savePasscodeBtn').on('click', function() {
         data: {
             _token: "{{ csrf_token() }}",
             account_number: $('input[name="account_number"]').val(),
-            passcode: passcode
+            passcode: $('#newPasscode').val()
         },
         success: function(res) {
+            stopLoading(button);
+
             iziToast.success({
                 title: 'Success',
                 message: res.message,
@@ -153,6 +186,8 @@ $('#savePasscodeBtn').on('click', function() {
             $('#createPasscodeModal').addClass('hidden');
         },
         error: function(xhr) {
+            stopLoading(button);
+
             iziToast.error({
                 title: 'Error',
                 message: xhr.responseJSON?.message || 'Failed to save passcode.',
@@ -162,27 +197,29 @@ $('#savePasscodeBtn').on('click', function() {
     });
 });
 
-// Verify passcode and login
-// Verify passcode and login
+// VERIFY PASSCODE
 $('#verifyPasscodeBtn').on('click', function() {
-    const passcode = $('#userPasscode').val();
-    const account_number = $('input[name="account_number"]').val(); // ✅ use account_number
+    let button = $(this);
+    startLoading(button);
 
     $.ajax({
         url: "{{ route('user.verify.passcode') }}",
         method: "POST",
         data: {
             _token: "{{ csrf_token() }}",
-            account_number: account_number,
-            passcode: passcode
+            account_number: $('input[name="account_number"]').val(),
+            passcode: $('#userPasscode').val()
         },
         success: function(res) {
+            stopLoading(button);
+
             iziToast.success({
                 title: 'Success',
                 message: res.message,
                 position: 'topRight'
             });
             $('#verifyPasscodeModal').addClass('hidden');
+
             if (res.redirect) {
                 setTimeout(() => {
                     window.location.href = res.redirect;
@@ -190,6 +227,8 @@ $('#verifyPasscodeBtn').on('click', function() {
             }
         },
         error: function(xhr) {
+            stopLoading(button);
+
             iziToast.error({
                 title: 'Error',
                 message: xhr.responseJSON?.message || 'Invalid passcode.',
@@ -198,7 +237,7 @@ $('#verifyPasscodeBtn').on('click', function() {
         }
     });
 });
-
 </script>
+
 
 @endsection

@@ -34,20 +34,46 @@
 </head>
 
 <body x-data="{ scrolled: false }" @scroll.window="scrolled = (window.scrollY > 0)">
-    
+
     <!-- ✅ Page Content -->
         @yield('content')
-        
+
     <!-- jQuery (required for AJAX) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
         <!-- iziToast JS -->
     <script src="https://cdn.jsdelivr.net/npm/izitoast@1.4.0/dist/js/iziToast.min.js"></script>
-    
+
     <script type="module" crossorigin src="{{asset("asset/js/auth-signin-basic.js")}}"></script>
     <script type="module" crossorigin src="{{asset("asset/admin.bundle-9LCnK6yO.js")}}"></script>
     <script type="module" crossorigin src="{{asset("asset/layout-Ce54t42U.js")}}"></script>
     <script type="module" crossorigin src="{{asset("asset/main-1p2CIAJu.js")}}"></script>
+    <script>
+// Automatically start loading on any button with .btn-submit
+$(document).on('click', '.btn-submit', function(e) {
+    let button = $(this);
+
+    // Prevent multiple clicks
+    if (button.prop("disabled")) return;
+
+    startLoading(button);
+});
+
+// Start loading state
+function startLoading(button) {
+    button.prop("disabled", true);
+    button.find(".btn-text").addClass("d-none");
+    button.find(".spinner-border").removeClass("d-none");
+}
+
+// Stop loading state (call after AJAX)
+function stopLoading(button) {
+    button.prop("disabled", false);
+    button.find(".spinner-border").addClass("d-none");
+    button.find(".btn-text").removeClass("d-none");
+}
+</script>
+
     @yield('scripts')
 </body>
 

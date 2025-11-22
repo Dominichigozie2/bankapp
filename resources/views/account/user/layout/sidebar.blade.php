@@ -72,8 +72,12 @@
   </ul>
 
   <div class="logout px-3 py-2 mt-auto border-top border-secondary">
-    <a href="#" class="nav-link text-white">
-      <i class="bi bi-box-arrow-right me-2"></i> <span>Logout</span>
-    </a>
+    <form id="userLogoutForm" action="{{ route('logout') }}" method="POST" class="d-flex justify-content-center">
+      @csrf
+      <button type="submit" class="btn text-white">
+        <i class="bi bi-box-arrow-right me-2 text-white"></i>
+        <span>Logout</span>
+      </button>
+    </form>
   </div>
 </div>

@@ -81,7 +81,32 @@
 
     <!-- JAVASCRIPT -->
     <script src="{{asset('assets/js/custom.js')}}"></script>
-    
+
+<script>
+// Automatically start loading on any button with .btn-submit
+$(document).on('click', '.btn-submit', function(e) {
+    let button = $(this);
+
+    // Prevent multiple clicks
+    if (button.prop("disabled")) return;
+
+    startLoading(button);
+});
+
+// Start loading state
+function startLoading(button) {
+    button.prop("disabled", true);
+    button.find(".btn-text").addClass("d-none");
+    button.find(".spinner-border").removeClass("d-none");
+}
+
+// Stop loading state (call after AJAX)
+function stopLoading(button) {
+    button.prop("disabled", false);
+    button.find(".spinner-border").addClass("d-none");
+    button.find(".btn-text").removeClass("d-none");
+}
+</script>
 
 
 
